@@ -1,0 +1,30 @@
+{
+  "name": "graph_proj",
+  "version": "1.0.0",
+  "description": "",
+  "main": "backend/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "webpack",
+    "build:dev": "webpack --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "clean-webpack-plugin": "^4.0.0-alpha.0",
+    "css-loader": "^6.1.0",
+    "electron": "^13.1.4",
+    "html-loader": "^2.1.2",
+    "html-webpack-plugin": "^5.3.2",
+    "style-loader": "^3.1.0",
+    "webpack": "^5.45.1",
+    "webpack-cli": "^4.7.2",
+    "webpack-electron-reload": "^1.0.1"
+  },
+  "dependencies": {
+    "electron-reload": "^1.5.0",
+    "split.js": "^1.6.4",
+    "tabbyjs": "^12.0.3"
+  }
+}

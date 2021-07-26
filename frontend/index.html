@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+
+    <title>Nodify</title>
+</head>
+
+<body>
+    <div id='appCont'>
+        <div id='left-side'>
+            <ul data-tabs-left>
+                <li><a data-tabby-default href="#canvas-cont">Canvas</a></li>
+                <!-- <li><a href="#canvas-cont-2">Canvas</a></li> -->
+            </ul>
+            <div id='canvas-cont'>
+                <canvas id='canvas'></canvas>
+            </div>
+            <div id='canvas-cont-2'>
+            </div>
+        </div>
+        <div id='right-side'>
+            <ul data-tabs-right>
+                <li><a data-tabby-default href="#cli-cont">CLI</a></li>
+                <li><a href="#canvas-cont-2">Error</a></li>
+                <li><a href="#canvas-cont-2">Debug</a></li>
+                <li><a href="#canvas-cont-2">Kaka</a></li>
+            </ul>
+            <div id="cli-cont">
+                <div class="highLite">
+                    <div class="highLite_colors"></div>
+                    <div class="highLite_editable" contenteditable></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src='index.js'></script>
+
+</body>
+
+</html>

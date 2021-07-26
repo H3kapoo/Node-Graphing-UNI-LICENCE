@@ -1,0 +1,141 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing:border-box;
+}
+
+#appCont{
+    
+    position:fixed;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+    background:rgba(255,255,255,0.1);
+}
+
+#spann{
+    color:red;
+}
+#canvas-cont{
+    width: 100%;
+    height: calc(100% - 36px); /*because of tabs height*/
+    overflow: auto;
+    background-color: rgb(75, 75, 75);
+}
+#canvas{
+    overflow-x: auto;
+    display: block;
+    /* background-color: rgb(212, 90, 90); */
+
+}
+
+
+#cli-cont{
+    width: 100%;
+    height: 100%;   
+}
+
+
+#cli-textarea:focus{
+    outline: none;
+}
+#cli-textarea{
+    white-space: pre;
+    font-size: 14px;
+    line-height: em;
+    font-size: 1em;
+    white-space: nowrap;
+    overflow-x: auto;
+    resize: none;
+    width: 100%;
+    height: 100%; 
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;         /* Opera/IE 8+ */
+    padding: 5px;
+}
+
+#error{
+    width: 100%;
+}
+
+.highLite,.highLite_err{
+    width: 100%;
+    height: 100%;
+    position: relative;
+    white-space: nowrap;
+    overflow-x: auto;
+    overflow-y: auto;
+  }
+  
+
+.highLite_colors,
+.highLite_editable,
+.highLite_colors_err {
+    width: 100%;
+    height: 100%;
+    outline: none;
+    padding: 10px;
+  }
+  
+  /* THE UNDERLAYING ONE WITH COLORS */
+.highLite_colors,.highLite_colors_err {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0; 
+    user-select: none;
+  }
+
+  .highLite_colors_err{
+      padding-top: 20px;
+  }
+  
+  /* THE OVERLAYING CONTENTEDITABLE WITH TRANSPARENT TEXT */
+.highLite > div:nth-child(2) {
+    position: relative;
+    -webkit-text-fill-color: transparent; /* Chrome: make text transparent */
+    /* text-fill-color: transparent;         One day, hopefully? */
+    color: black;                         /* But keep caret black */
+  }
+
+.hl_angled{ color: turquoise; }
+.hl_curly{ color: fuchsia; }
+
+
+
+.highlight {
+    background-color: yellow;
+  }
+
+.gutter {
+    background-repeat: no-repeat;
+    background-position: 50%;
+    background-color: rgb(128, 128, 128);
+}
+
+.gutter.gutter-horizontal {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
+    cursor: col-resize;
+}
+
+.gutter.gutter-vertical {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
+    cursor:row-resize;
+}
+
+.error_tab_tag,.cli_tab_tag{
+    color: white;
+    font-size: 0.9rem;
+    font-family:Arial, Helvetica, sans-serif;
+    font-weight: 100;
+    background-color: rgb(128, 128, 128);
+    padding-bottom: 5px;
+    text-align: center;
+}
+.cli_tab_tag{
+    padding-top: 5px;
+
+}
