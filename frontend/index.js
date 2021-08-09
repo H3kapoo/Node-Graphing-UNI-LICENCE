@@ -1,5 +1,5 @@
-import "./index.css";
-import "./tabby.css";
+import "./Styles/index.css";
+import "./Styles/tabby.css";
 
 import Tabby from 'tabbyjs'
 import Split from 'split.js'
@@ -13,7 +13,7 @@ const graphManager_ = new GraphManager(canvasManager_, cliTabManager_)
 graphManager_.start()
 
 //split into 2 parts
-Split(['#left-side', '#right-side'], { sizes: [75, 25] })
+Split(['#left-side', '#right-side'], { sizes: [65, 35] })
 
 //create tabs area
 new Tabby('[data-tabs-left]');

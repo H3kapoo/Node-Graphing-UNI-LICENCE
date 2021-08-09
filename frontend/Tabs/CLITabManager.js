@@ -9,6 +9,28 @@ export class CLITabManager {
         this.listenersSetup()
     }
 
+    //todo: implement later..
+    outputStd(foundInContext, msg) {
+        let outputDiv = document.createElement("div")
+
+        outputDiv.id = "cmd-info-text"
+        outputDiv.innerText = foundInContext + " " + msg
+
+        const holderDiv = document.getElementById("cmd-prepender");
+        holderDiv.appendChild(outputDiv)
+    }
+
+    outputErr(foundInContext, msg) {
+
+        let outputDiv = document.createElement("div")
+
+        outputDiv.id = "cmd-err-text"
+        outputDiv.innerText = foundInContext + " " + msg
+
+        const holderDiv = document.getElementById("cmd-prepender");
+        holderDiv.appendChild(outputDiv)
+    }
+
     listenersSetup() {
         this.cliObject.addEventListener('paste', e => this.pasteListener(e))
         this.cliObject.addEventListener('keydown', e => this.keyDownListener(e))

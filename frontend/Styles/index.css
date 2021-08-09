@@ -41,7 +41,7 @@
 #cli-textarea:focus{
     outline: none;
 }
-#cli-textarea{
+#cli-textarea2{
     white-space: pre;
     font-size: 14px;
     line-height: em;
@@ -71,9 +71,7 @@
   }
   
 
-.highLite_colors,
-.highLite_editable,
-.highLite_colors_err {
+.highLite_editable{
     width: 100%;
     height: 100%;
     outline: none;
@@ -147,12 +145,13 @@
 }
 
 .highLite_editable { 
-   word-break: break-all;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    word-break: break-word;
+
    color:chocolate;
 }
-.highLite_editable br {
-    display: inline;
-}
+
 .highLite_editable::before{
     content: "CLI>";
     padding-left: 3px;

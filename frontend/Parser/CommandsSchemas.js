@@ -12,4 +12,7 @@ export const CommandsSchemas = {
         "-origin": "TWO_D_INT_VECS",
         "-radius": "ONE_D_INT_VEC",
     },
+    "tesst": {
+        mandatory: []
+    }
 }
