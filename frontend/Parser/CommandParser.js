@@ -46,6 +46,13 @@ export class CommandParser {
             }
 
             //parsing of the actual cmd using the schemas
+            if (!CommandArgParser[CommandsSchemas[cmdArgs[0]][opt]]) {
+                return {
+                    "hasError": true,
+                    "msg": "There is no SCHEMA_TYPE to parse this arg,check for misspelling"
+                }
+            }
+
             stateChangeMap[opt] = CommandArgParser[CommandsSchemas[cmdArgs[0]][opt]](optArg)
 
             //bubble up more ERRORS from cmd arg parser here :) to be caught

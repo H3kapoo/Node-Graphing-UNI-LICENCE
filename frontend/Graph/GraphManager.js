@@ -20,6 +20,8 @@ export class GraphManager {
     }
 
     compute(evt) {
+
+        //TODO: HANDLE CASES WHEN parsedResult.hasError IS UNDEFINED
         if (evt.which !== 13) return
 
         //1. parse into data tokens DONE
@@ -29,13 +31,14 @@ export class GraphManager {
         this.cliManager_.clearAfterDoneWithText()
 
         //3. catch any errors thrown by parsing stage DONE
+        // console.log(parsedResult)
         if (parsedResult.hasError)
             return this.cliManager_.outputErr('[Parse]', parsedResult.msg)
 
         //4. if parsed data is ok,process command on current state schema WORKING ON
         let processedResult = this.commandProcessor_.process(this.graphState_, parsedResult)
 
-        //5. catch any errors thrown by process stage TBD
+        //5. catch any errors thrown by process stage SEMI-DONE
         if (processedResult.hasError)
             return this.cliManager_.outputErr('[Process]', processedResult.msg)
 
@@ -43,6 +46,7 @@ export class GraphManager {
         // this.graphRenderer_(this.graphState_.getState())
 
         //7. output to CLI the cmd output DONE
+        console.log('compute ', processedResult.msg)
         this.cliManager_.outputStd('[GraphInfo]', processedResult.msg)
 
     }

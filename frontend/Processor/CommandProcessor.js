@@ -20,21 +20,24 @@ export class CommandProcessor {
 
     //note: here the user may have defined -example that internally transforms
     //into something like -radius and -color command
-    //and thats why at 'push' we always need to verify if the commands are supported
+    //and thats why at 'pushXY' we always need to verify if the commands are supported
     //for nodes and respectively for conns
-    //this assumes the user will not try to use any opt that doesnt exist
-    //currently in parsedData,the errors generated wont be catched here,not now
+    //this assures the user will not try to use any opt that doesnt exist
     commands_ = {
         nodeMake(parsedData, state) {
-            //here parsedData can be modified according to the user's needs
-            //this will make use of state.pushCreateNode({opts})
+            //here parsedData/copy of can be modified according to the user's needs
+            //ALWAYS COPY THINGS FIRST INTO NEW DICT
+            //ALWAYS PASS NEW DICT FROM ORIGINAL TO push COMMANDS to avoid unexpected errs
 
-            let nodePosVecs = parsedData['-pos']
+            const nodePosVecs = parsedData['-pos']
+            const nodeTypes = parsedData['-type']
 
-            for (let pos of nodePosVecs) {
-                parsedData['-pos'] = pos
+            for (let i = 0; i < nodePosVecs.length; i++) {
+                let data = { ...parsedData }
+                data['-pos'] = this._va(nodePosVecs, i)
+                data['-type'] = this._va(nodeTypes, i) ? nodeTypes[i] : 'round'
 
-                let stateResult = state.pushCreateNode(parsedData)
+                let stateResult = state.pushCreateNode(data)
 
                 if (stateResult.hasError) return stateResult
             }
@@ -45,9 +48,63 @@ export class CommandProcessor {
             let pushResult = state.executePushed()
 
             //bubble up std output msg
-            return { 'msg': pushResult.msg }
+            let output = ''
+
+            for (let p of pushResult.msg)
+                output += p.type + ': OK '
+            //bubble up std output msg
+            return { 'msg': output }
         },
-        otherCmd(parsedData, state) { /* Impl */ }
+        nodeUp(parsedData, state) {
+            // [[1,2],[3,5,6]] //-id
+            // [1,2] //-radius
+            const nodeIds2D = parsedData['-id']
+            const nodeRadius = parsedData['-radius']
+
+            //loop over 2d array
+            for (let i = 0; i < nodeIds2D.length; i++) {
+                //loop over els inside array
+                for (let el = 0; el < nodeIds2D[i].length; el++) {
+                    let data = { ...parsedData }
+
+                    data['-id'] = nodeIds2D[i][el]
+                    data['-radius'] = this._va(nodeRadius, i) ? nodeRadius[i] : 100000
+
+                    let stateResult = state.pushUpdateNode(data)
+
+                    if (stateResult.hasError) return stateResult
+                }
+            }
+
+            let pushResult = state.executePushed()
+            let output = ''
+
+            for (let p of pushResult.msg)
+                output += p.type + ' '
+            //bubble up std output msg
+            return { 'msg': output }
+
+        },
+        nodeDel(parsedData, state) {
+            //[1,2,4] //-id
+            for (let i of parsedData['-id']) {
+                let stateResult = state.pushDeleteNode(i)
+
+                if (stateResult.hasError) return stateResult
+            }
+
+            let pushResult = state.executePushed()
+            let output = ''
+
+            for (let p of pushResult.msg)
+                output += p.type + ' '
+            //bubble up std output msg
+            return { 'msg': output }
+        },
+        _va(arg, i) {
+            if (arg === undefined || i >= arg.length) return undefined
+            return arg[i]
+        },
     }
 
 
