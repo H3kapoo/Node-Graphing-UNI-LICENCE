@@ -1,6 +1,7 @@
 import "./Styles/index.css";
 import "./Styles/tabby.css";
 
+
 import Tabby from 'tabbyjs'
 import Split from 'split.js'
 import { CLITabManager } from './Tabs/CLITabManager';
@@ -18,6 +19,29 @@ Split(['#left-side', '#right-side'], { sizes: [65, 35] })
 //create tabs area
 new Tabby('[data-tabs-left]');
 new Tabby('[data-tabs-right]');
+
+function loadScript(url, callback) {
+    // adding the script element to the head as suggested before
+    var head = document.getElementsByTagName('head')[0];
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = url;
+    // then bind the event to the callback function 
+    // there are several events for cross browser compatibility
+    script.onreadystatechange = callback;
+    script.onload = callback;
+
+    // fire the loading
+    head.appendChild(script);
+}
+
+//load all commands js from external
+
+loadScript("test.js", () => {
+    console.log(new nodeMake().schema['node.make'])
+    console.log(new nodeMake().logic({}, {}))
+
+});
 
 //JUNK DOWN BELLOW THAT MIGHT BE USEFUL LATER
 //DONT DELETE

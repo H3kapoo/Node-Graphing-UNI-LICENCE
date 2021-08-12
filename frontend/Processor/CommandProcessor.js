@@ -89,7 +89,7 @@ export class CommandProcessor {
             //[1,2,4] //-id
             for (let i of parsedData['-id']) {
                 let stateResult = state.pushDeleteNode(i)
-
+                // / eefeff
                 if (stateResult.hasError) return stateResult
             }
 
