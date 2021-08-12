@@ -1,7 +1,6 @@
 import "./Styles/index.css";
 import "./Styles/tabby.css";
 
-
 import Tabby from 'tabbyjs'
 import Split from 'split.js'
 import { CLITabManager } from './Tabs/CLITabManager';
@@ -20,6 +19,36 @@ Split(['#left-side', '#right-side'], { sizes: [65, 35] })
 new Tabby('[data-tabs-left]');
 new Tabby('[data-tabs-right]');
 
+//load all commands js from external
+import { CommandsSchemas } from '../frontend/Parser/CommandsSchemas'
+import { CommandsLogic } from '../frontend/Processor/CommandsLogic'
+
+
+window.api.receive('nodify-reload-cmds-short', (evt, args) => {
+    refreshCommands()
+})
+
+
+refreshCommands()
+
+function refreshCommands() {
+    CommandsSchemas = CommandsLogic = {} //temp
+    let filePaths = window.api.send('nodify-reload-cmds', {})
+    console.log(filePaths)
+
+    for (let file of filePaths)
+        loadScript(file, () => {
+
+            CommandsSchemas[data.schema.name] = data.schema
+            CommandsLogic[data.logic.name] = data.logic[data.logic.name]
+
+            // console.log(CommandsSchemas)
+            // console.log(CommandsLogic)
+        });
+    console.log('Loaded ', filePaths.length, ' commands')
+
+}
+
 function loadScript(url, callback) {
     // adding the script element to the head as suggested before
     var head = document.getElementsByTagName('head')[0];
@@ -35,31 +64,6 @@ function loadScript(url, callback) {
     head.appendChild(script);
 }
 
-//load all commands js from external
-import { CommandsSchemas } from '../frontend/Parser/CommandsSchemas'
-import { CommandsLogic } from '../frontend/Processor/CommandsLogic'
-
-//CHECKS TO BE ADDED
-loadScript("../Commands/nodeMake.js", () => {
-
-    CommandsSchemas[data.schema.name] = data.schema
-    CommandsLogic[data.logic.name] = data.logic[data.logic.name]
-});
-
-loadScript("../Commands/nodeUp.js", () => {
-
-    CommandsSchemas[data.schema.name] = data.schema
-    CommandsLogic[data.logic.name] = data.logic[data.logic.name]
-});
-
-loadScript("../Commands/nodeDel.js", () => {
-
-    CommandsSchemas[data.schema.name] = data.schema
-    CommandsLogic[data.logic.name] = data.logic[data.logic.name]
-
-    console.log(CommandsSchemas)
-    console.log(CommandsLogic)
-});
 
 //JUNK DOWN BELLOW THAT MIGHT BE USEFUL LATER
 //DONT DELETE

@@ -1,6 +1,8 @@
 const htmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const path = require('path')
+const webpack = require("webpack");
+
 
 module.exports = {
     // target: 'electron-main',
@@ -32,6 +34,6 @@ module.exports = {
             template: "./frontend/index.html",
             filename: "./index.html"
         }),
-        new CleanWebpackPlugin(),
+        new CleanWebpackPlugin()
     ]
 }
