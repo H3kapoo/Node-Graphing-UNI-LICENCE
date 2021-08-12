@@ -36,11 +36,29 @@ function loadScript(url, callback) {
 }
 
 //load all commands js from external
+import { CommandsSchemas } from '../frontend/Parser/CommandsSchemas'
+import { CommandsLogic } from '../frontend/Processor/CommandsLogic'
 
-loadScript("test.js", () => {
-    console.log(new nodeMake().schema['node.make'])
-    console.log(new nodeMake().logic({}, {}))
+//CHECKS TO BE ADDED
+loadScript("../Commands/nodeMake.js", () => {
 
+    CommandsSchemas[data.schema.name] = data.schema
+    CommandsLogic[data.logic.name] = data.logic[data.logic.name]
+});
+
+loadScript("../Commands/nodeUp.js", () => {
+
+    CommandsSchemas[data.schema.name] = data.schema
+    CommandsLogic[data.logic.name] = data.logic[data.logic.name]
+});
+
+loadScript("../Commands/nodeDel.js", () => {
+
+    CommandsSchemas[data.schema.name] = data.schema
+    CommandsLogic[data.logic.name] = data.logic[data.logic.name]
+
+    console.log(CommandsSchemas)
+    console.log(CommandsLogic)
 });
 
 //JUNK DOWN BELLOW THAT MIGHT BE USEFUL LATER
