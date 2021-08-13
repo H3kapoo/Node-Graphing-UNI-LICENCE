@@ -9,7 +9,10 @@
     "build": "webpack",
     "build:dev": "webpack --watch",
     "package": "electron-forge package",
-    "make": "electron-forge make"
+    "make": "electron-forge make",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "postinstall": "electron-builder install-app-deps"
   },
   "keywords": [],
   "author": "",
@@ -28,13 +31,24 @@
     "style-loader": "^3.1.0",
     "webpack": "^5.45.1",
     "webpack-cli": "^4.7.2",
-    "webpack-electron-reload": "^1.0.1"
+    "webpack-electron-reload": "^1.0.1",
+    "electron-builder": "^22.11.7"
   },
   "dependencies": {
     "electron-reload": "^1.5.0",
     "electron-squirrel-startup": "^1.0.0",
     "split.js": "^1.6.4",
     "tabbyjs": "^12.0.3"
+  },
+  "build": {
+    "appId": "Nodify_v1",
+    "mac": {
+      "category": "Nodes app"
+    },
+    "publish": null,
+    "directories": {
+      "output": "./output"
+    }
   },
   "config": {
     "forge": {

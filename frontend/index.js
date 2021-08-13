@@ -34,7 +34,6 @@ refreshCommands()
 function refreshCommands() {
     CommandsSchemas = CommandsLogic = {} //temp
     let filePaths = window.api.send('nodify-reload-cmds', {})
-    console.log(filePaths)
 
     for (let file of filePaths)
         loadScript(file, () => {
@@ -42,9 +41,9 @@ function refreshCommands() {
             CommandsSchemas[data.schema.name] = data.schema
             CommandsLogic[data.logic.name] = data.logic[data.logic.name]
 
-            // console.log(CommandsSchemas)
-            // console.log(CommandsLogic)
+            unloadScript('cmd-script')
         });
+
     console.log('Loaded ', filePaths.length, ' commands')
 
 }
@@ -55,6 +54,7 @@ function loadScript(url, callback) {
     var script = document.createElement('script');
     script.type = 'text/javascript';
     script.src = url;
+    script.id = 'cmd-script'
     // then bind the event to the callback function 
     // there are several events for cross browser compatibility
     script.onreadystatechange = callback;
@@ -64,7 +64,9 @@ function loadScript(url, callback) {
     head.appendChild(script);
 }
 
-
+function unloadScript(id) {
+    document.getElementById(id).remove();
+}
 //JUNK DOWN BELLOW THAT MIGHT BE USEFUL LATER
 //DONT DELETE
 
