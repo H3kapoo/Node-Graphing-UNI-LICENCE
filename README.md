@@ -45,23 +45,23 @@ CLI$> node.update -id 1 -color blue
 ```11.``` &#32; DONE until ```enter key``` pressed again :) => ```0.```
 
 ## Mix for now..
-### ```Internally supported options on nodes```
-| Option          | Arg Type       | Observations |
-| -------------    |:-------------:|:-------------:|
-| -id      | integer ||
-| -node_id       | integer | can only be applied internally |
-| -pos      | intPairVec ||
-| -radius | integer||
-| -color | string ||
-| -type | string||
 
-### ```Internally supported options on connections```
-| Option          | Arg Type       | Observations |
-| -------------    |:-------------:|:-------------:|
-| -color | string ||
-
-
-
+### ```Internally supported options + types for nodes & connections```
+```javascript
+//nodes
+{
+    "-radius": { 'active': true, 'type': 'integer' },
+    "-pos": { 'active': true, 'type': 'intPairVec' },
+    "-color": { 'active': true, 'type': 'string' },
+    "-node_id": { 'active': true, 'type': 'integer' },
+    "-type": { 'active': true, 'type': 'integer' },
+    "-id": { 'active': true, 'type': 'integer' },
+}
+//connections
+{
+    "-color": { 'active': true, 'type': 'string' },
+}
+```
 
 
 
