@@ -45,7 +45,32 @@ CLI$> node.update -id 1 -color blue
 ```11.``` &#32; DONE until ```enter key``` pressed again :) => ```0.```
 
 ## Mix for now..
+### Command Schema
+#### Layouf of schema
+The command schema will always be composed of 3 main things: The name of the command, an array containing some mandatory parameters that the user needs to input and finally the options themselves with the corresponding argument type:
+```javascript
+{
+    "name": 'command.name.here',
+    "mandatory": ["mandatory.options.strings.here.comma.separated"],
+    "-option.name": "argument.type.for.option",
+    //other options...
+}
+```
+#### Types for arguments
+Wether it is an internal command or a user defined one, the option's argument of a schema has to have a type, here are some that are available now:
+```aida
+oneDimStringVec = a,b,c,d,...            (simple vector of comma separated strings)
+oneDimIntVec    = 1,2,5,7,...            (simple vector of comma separated ints)
+twoDimIntVecs   = 1,2 OR 1,2|5,6|5,9|... (vector of vectors containing strictly two ints)
+nDimIntVecs     = 1,4,6|4|1,5|...        (vector of vectors each containing arbitrary many ints)
+```
+```Note:``` The ```|``` symbol is used for the vector of vectors types to basically "define" the start of another vector group. Groups can be useful later on when working with the command's logic.
 
+The ```Parser``` will spit diferent formats for the option depending on the argument type. Example:
+```aida
+arg type is: ends_in_Vec  => [simple,comma,separated,data,vector] => [..]
+arg type is: ends_in_Vecs => [[multiple,comma,separated],[comma,separated,arrays]] => [[..],[..]]
+```
 ### ```Internally supported options + types for nodes & connections```
 ```javascript
 //nodes
