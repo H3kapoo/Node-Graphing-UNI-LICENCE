@@ -38,7 +38,7 @@ CLI$> node.update -id 1 -color blue
 
 ```8.```&#32; Control will then flow thru the code logic of that command. In this example, the command's logic will call ```StateManager```'s ```pushUpdateNode({changeObj})``` that will push to the ```StateManager``` a command to be executed.
 
-```9.```&#32; Before any ```push``` command is actually executed on the ```state``` , ```StateManager``` will validate with the internally supported options for nodes/connections if the passed options are valid.If they are not valid, errors will bubble up to the terminal, terminating. If there are no errors, the code logic of that command will call ```executePushed()``` that will finally apply all the ququed ```push``` commands to the bound state. Control leaves the command logic scope.
+```9.```&#32; Before any ```push``` command is actually executed on the ```state``` , ```StateManager``` will validate with the internally supported options for nodes/connections found in ```StateSupport``` file if the passed options are valid.If they are not valid, errors will bubble up to the terminal, terminating. If there are no errors, the code logic of that command will call ```executePushed()``` that will finally apply all the ququed ```push``` commands to the bound state. Control leaves the command logic scope.
 
 ```10.```&#32; Next up, ```GraphManager``` calls the render method on ```GraphRenderer``` (passing in the ```StateManager``` object) that will render the nodes and connections according to the state stored in the ```StateManager```.
 
