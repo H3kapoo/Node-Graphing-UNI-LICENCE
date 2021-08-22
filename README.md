@@ -51,6 +51,16 @@ CLI$> node.update -id 1 -color blue
 </details>
 
 ## ```Command File Anatomy```
+### Internally defined commands
+As of ```22-08-2021```, there are exactly ```3``` internally defined commands by the application itself:
+
+| command | mandatory | optional | description |
+|---|---|---|---|
+| ```node.make``` | ```pos<twoDimIntVecs>```| ```type<oneDimStringVec>``` | Creates group of nodes at given positions that are round by default.Type option can be used to change node appearance. |
+| ```node.update``` | ```id<oneDimIntVec>```  | ```color<oneDimStringVec``` <br/> ```radius<oneDimIntVec>```  | Updates the targeted node ids with the specified options. |
+| ```node.delete``` | ```id<oneDimIntVec>``` | ```None``` | Deletes the targeted nodes. |
+  
+  
 ### Background
 Each command will be picked up by the app at start-up or when the user clicks the ```refresh commands``` option from the menu dropdowns. This will load all the command's in the app's memory from the ```path/from/where/to/load``` directory ready to be ran. <br/> By making them individual files has the advantage of easy distribution of custom commands to other users and the ability to only load/unload necessary commands. <br/>
 Every command file is one big JSON like object written in the ```.js``` extension consisting of two core parts:
@@ -110,9 +120,10 @@ arg type is: ends_in_Vec  => [simple,comma,separated,data,vector] => [..]
 arg type is: ends_in_Vecs => [[multiple,comma,separated],[comma,separated,arrays]] => [[..],[..]]
 ```
 ### Example of a schema
-```Note:``` All presented command examples are just EXAMPLES of how the command might work in production, don't take the behaviour for granted.
-
-A simple example of a schema of the command that let's the user change the color and radius of multiple node ids at once. The node's radius is not required for this command but the color and id option however is mandatory and the parser will throw an error if not inputted:
+```Note:``` All presented command examples are just EXAMPLES of how the command might work in production, don't take the behaviour for granted. <br/>
+```Naming Note 1:``` As a good practice, if your command name has "multiple words" in it, separate them by a ```dot``` and not by ```doingThis``` or ```doing_this```,  although you're not forced to adhere to this good practice. <br/>
+```Naming Note 2:``` If the commands act on nodes, it is a good and intuitive practice to name the command starting with ```node.``` + the name of the command. Same logic applies to the connections or whatever else the user decides to introduce (namespacing concept). <br/> <br/>
+A simple example of a schema of the command that let's the user change the color and radius of multiple node ids at once. The node's radius is not required for this command but the color and id option however are mandatory and the parser will throw an error if not inputted:
 
 ```javascript
 //CLI$> node.change -id 3,5 -color red -radius 30
