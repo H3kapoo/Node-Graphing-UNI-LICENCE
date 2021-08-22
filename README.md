@@ -51,6 +51,7 @@ CLI$> node.update -id 1 -color blue
 </details>
 
 ## ```Command File Anatomy```
+### Background
 Each command will be picked up by the app at start-up or when the user clicks the ```refresh commands``` option from the menu dropdowns. This will load all the command's in the app's memory from the ```path/from/where/to/load``` directory ready to be ran. <br/> By making them individual files has the advantage of easy distribution of custom commands to other users and the ability to only load/unload necessary commands. <br/>
 Every command file is one big JSON like object written in the ```.js``` extension consisting of two core parts:
 <ol>
@@ -108,6 +109,29 @@ The ```Parser``` will spit diferent formats for the option depending on the argu
 arg type is: ends_in_Vec  => [simple,comma,separated,data,vector] => [..]
 arg type is: ends_in_Vecs => [[multiple,comma,separated],[comma,separated,arrays]] => [[..],[..]]
 ```
+### Example of a schema
+A simple example of a schema of the command that let's the user change the color and radius of multiple nodes at once. The node's radius is not required for this command but the color option however is mandatory and the parser will throw an error if not inputted.
+
+```javascript
+//CLI$> node.change -color red -radius 30
+{
+    "name": 'node.change',
+    "mandatory": ["-color"],
+    "-color": "oneDimStringVec",
+    "-radius": "oneDimIntVec"
+}
+```
+
+Example of a command that doesnt require anything from the user to run it's logic
+```javascript
+//CLI$> node.nothing
+{
+    "name": 'node.nothing',
+    "mandatory": []
+}
+```
+
+
 ## Internals mix
 ### ```Internally supported options + types for nodes & connections```
 ```javascript
