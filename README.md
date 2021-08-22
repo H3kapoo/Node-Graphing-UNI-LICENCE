@@ -8,7 +8,11 @@
   
 </details>
 
+
 ### ```Details about the flow```
+<details>
+
+<summary>Click to open</summary>
 
 ```0.```&#32;For example, the user might input the following command in order to update the color of node ```0``` to the color ```blue```:
 ```cs
@@ -44,10 +48,42 @@ CLI$> node.update -id 1 -color blue
 
 ```11.``` &#32; DONE until ```enter key``` pressed again :) => ```0.```
 
-## Mix for now..
+</details>
+
+## ```Command File Anatomy```
+Each command will be picked up by the app at start-up or when the user clicks the ```refresh commands``` option from the menu dropdowns. This will load all the command's in the app's memory from the ```path/from/where/to/load``` directory ready to be ran. <br/> By making them individual files has the advantage of easy distribution of custom commands to other users and the ability to only load/unload necessary commands. <br/>
+Every command file is one big JSON like object written in the ```.js``` extension consisting of two core parts:
+<ol>
+  <li>command schema</li>
+  <li>command logic</li>
+</ol>
+
+A quick boilerplate example of an empty command file structure:
+
+```javascript
+//dummyExample.js
+data = {
+    "schema": {
+        ...
+    },
+    "logic": {
+        ...
+    }
+}
+```
+
+```Note:``` The main encapsulating object name always needs to be called ```data``` like in the above example. All the necessary code that goes into ```"schema"``` and ```"logic"``` will be discussed in their unique sections bellow.
+
 ### Command Schema
 #### Layouf of schema
-The command schema will always be composed of 3 main things: The name of the command, an array containing some mandatory parameters that the user needs to input and finally the options themselves with the corresponding argument type:
+The command schema will always be composed of 3 main things: 
+<ol>
+  <li>the name of the command</li>
+  <li>an array containing some mandatory parameters that the user needs to input</li>
+  <li>options themselves with the corresponding argument type</li>
+</ol>
+Should look something like this:
+
 ```javascript
 {
     "name": 'command.name.here',
