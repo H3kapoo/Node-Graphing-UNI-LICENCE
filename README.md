@@ -29,11 +29,11 @@ CLI$> node.update -id 1 -color blue
 ```javascript
 {
    "cmdName":"nodeUpdate",
-   "-id":[[0]],
+   "-id":[0],
    "-color":["blue"]
 }
 ```
-```NOTE:```  The reason why <i>id</i> and <i>color</i> are a vector of vectors and a vector respectively, will be addressed later on.
+```NOTE:```  The reason why <i>id</i> and <i>color</i> are vectors will be addressed later on.
 
 ```5.```&#32; ```GraphManager``` tells ```CLIManager``` to flush the user inputed command from the screen. <br/>
 ```6.```&#32; ```GraphManager``` passes the above parsed object block along with the currently bound ```StateManager``` object to the ```CommandProcessor``` to be further validated and applied.
@@ -75,12 +75,13 @@ data = {
 ```Note:``` The main encapsulating object name always needs to be called ```data``` like in the above example. All the necessary code that goes into ```"schema"``` and ```"logic"``` will be discussed in their unique sections bellow.
 
 ### Command Schema
-#### Layouf of schema
+The command schema is used by the parsing stage to make sure the user inputted the right options with their according parameters as the creator of the command intended. The schema is the first user validation stage the inputted command goes thru.
+#### Layout of schema
 The command schema will always be composed of 3 main things: 
 <ol>
   <li>the name of the command</li>
-  <li>an array containing some mandatory parameters that the user needs to input</li>
-  <li>options themselves with the corresponding argument type</li>
+  <li>an array containing some mandatory parameters that the user is forced to input</li>
+  <li>the options themselves with the corresponding argument type</li>
 </ol>
 Should look something like this:
 
@@ -107,6 +108,7 @@ The ```Parser``` will spit diferent formats for the option depending on the argu
 arg type is: ends_in_Vec  => [simple,comma,separated,data,vector] => [..]
 arg type is: ends_in_Vecs => [[multiple,comma,separated],[comma,separated,arrays]] => [[..],[..]]
 ```
+## Internals mix
 ### ```Internally supported options + types for nodes & connections```
 ```javascript
 //nodes
