@@ -32,7 +32,11 @@ window.api.receive('nodify-reload-cmds-short', (evt, args) => {
 refreshCommands()
 
 function refreshCommands() {
-    CommandsSchemas = CommandsLogic = {} //temp
+    let _va = CommandsLogic._va
+    CommandsSchemas = {}
+    CommandsLogic = {}
+    CommandsLogic['_va'] = _va
+
     let filePaths = window.api.send('nodify-reload-cmds', {})
 
     for (let file of filePaths)

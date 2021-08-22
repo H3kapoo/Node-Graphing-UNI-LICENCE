@@ -2,7 +2,7 @@ data = {
     "schema": {
         "name": 'node.del',
         "mandatory": ["-id"],
-        "-id": "ONE_D_INT_VEC"    //1,2,3
+        "-id": "oneDimIntVec"    //1,2,3
     },
     "logic": {
         "name": "nodeDel",

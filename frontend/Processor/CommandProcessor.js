@@ -15,8 +15,7 @@ export class CommandProcessor {
                 'msg': "Command '" + parsedData.cmdName + "' exists but has no logic definition,\
                                     did you forget to add it?"
             }
-
-        return CommandsLogic[parsedData.cmdName](parsedData, graphState)
+        return CommandsLogic[parsedData.cmdName](parsedData, graphState) //this gets updated by reference!!
     }
 
     //note: here the user may have defined -example that internally transforms

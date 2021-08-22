@@ -2,22 +2,22 @@ data = {
     "schema": {
         "name": 'node.make',
         "mandatory": ["-pos"],
-        "-pos": "TWO_D_INT_VECS",    //1,2|3,4 (strictly two of grp length)
-        "-type": "ONE_D_STRING_VEC", // str,str
+        "-pos": "twoDimIntVecs",    //1,2|3,4 (strictly two of grp length)
+        "-radius": "oneDimIntVec", // str,str
     },
     "logic": {
         "name": "nodeMake",
         nodeMake(parsedData, state) {
 
             const nodePosVecs = parsedData['-pos']
-            const nodeTypes = parsedData['-type']
+            const nodeTypes = parsedData['-radius'] || []
 
             for (let i = 0; i < nodePosVecs.length; i++) {
-                let data = { ...parsedData }
-                data['-pos'] = this._va(nodePosVecs, i)
-                data['-type'] = this._va(nodeTypes, i) ? nodeTypes[i] : 'round'
+                let data = { ...parsedData } //copy cus js reference sucks
+                data['-pos'] = nodePosVecs[i]
+                data['-radius'] = nodeTypes[i] || 30 //empty for error, put int for default val
 
-                let stateResult = state.pushCreateNode(data)
+                let stateResult = state.pushCreateNode(data) //error and msg if any
 
                 if (stateResult.hasError) return stateResult
             }
@@ -27,14 +27,8 @@ data = {
             //format a pretty output
             let pushResult = state.executePushed()
 
-            //bubble up std output msg
-            let output = ''
 
-            for (let p of pushResult.msg)
-                output += p.type + ': OK '
-            //bubble up std output msg
-            return { 'msg': output }
+            return { 'msg': `Created ${pushResult.msg.length} nodes` }
         }
     }
-
 }

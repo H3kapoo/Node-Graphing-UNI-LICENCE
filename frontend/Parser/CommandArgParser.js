@@ -1,7 +1,6 @@
-//Validate and return values according to cmd schema
-//TODO: BUBBLE UP ERROR MSGS 
 export const CommandArgParser = {
-    ONE_D_STRING_VEC(arg) {
+    //N_D_STRING_VECS - Todo a,b,c|d,g,e|...
+    oneDimStringVec(arg) {
         //c,b,a
         let splitted = arg.split(',')
         let arr = []
@@ -17,7 +16,7 @@ export const CommandArgParser = {
 
         return arr
     },
-    N_D_INT_VECS(arg) {
+    nDimIntVecs(arg) {
         //1,2,5,6,..|3,4,4,...|5,6
         let splitted = arg.split('|')
         let arr = []
@@ -45,7 +44,7 @@ export const CommandArgParser = {
         }
         return arr
     },
-    TWO_D_INT_VECS(arg) {
+    twoDimIntVecs(arg) {
         //1,2|3,4|5,6
         let splitted = arg.split('|')
         let arr = []
@@ -84,7 +83,7 @@ export const CommandArgParser = {
         }
         return arr
     },
-    ONE_D_INT_VEC(arg) {
+    oneDimIntVec(arg) {
         //1,2,3
         let splitted = arg.split(',')
         let arr = []

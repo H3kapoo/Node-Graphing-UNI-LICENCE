@@ -8,7 +8,7 @@ export class CommandParser {
 
         let stateChangeMap = {}
 
-        if (!cmdArgs.length) return { hasError: "false" }
+        if (!cmdArgs.length) return { hasError: "false", "msg": "Empty.Nothing to do" }
 
         if (!CommandsSchemas[cmdArgs[0]]) {
             return {
@@ -49,7 +49,7 @@ export class CommandParser {
             if (!CommandArgParser[CommandsSchemas[cmdArgs[0]][opt]]) {
                 return {
                     "hasError": true,
-                    "msg": "There is no SCHEMA_TYPE to parse this arg,check for misspelling"
+                    "msg": "There is no SCHEMA_ARG_TYPE to parse this arg,check for misspelling"
                 }
             }
 
@@ -69,7 +69,6 @@ export class CommandParser {
                 }
             }
         }
-
         return stateChangeMap
     }
 

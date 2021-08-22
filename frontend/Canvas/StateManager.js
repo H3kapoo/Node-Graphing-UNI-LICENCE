@@ -1,6 +1,8 @@
 //what is here should not be allowed for the user to thinker with
 
 //NOTE: this all returns to CommandProcessor.js -> GraphManager.js -> stderr/stdout
+import { SupportedValidators, SupportedConnOpts, SupportedNodeOpts } from "./StateSupport"
+
 export class StateManager {
     state_ = {}
     actionsQueue_ = []
@@ -13,31 +15,35 @@ export class StateManager {
             "conns": {},
         }
     }
-    //THIS ACTS LIKE A VALIDATION STAGE ONLY THAT BUILDS
-    //SOME REQUIREMENTS FOR THE 'MERGE' 
-    //NEEDS FURTHER WORK
-    //validation happens here for the opts
-    //throws any errors that might happen
-    //if valid push to queue the action
-    //check that all objecs are not 2D vecs but 1D ones TO THIS IN LATER STAGE
+
+    getNodeData() {
+        return { ...this.state_.nodes }
+    }
+
+    getConnsData() {
+        return { ...this.state_.conns }
+    }
+
+    //Indeed for now we expect all options to come as this [] and not as this [[]]
+    //This might throw a problem in the future and it needs to be addressed
     pushCreateNode(opts) {
 
         // 1. here we verify all its ok for opts
         // 2. we assign the 'to be created' node an unique ID
         // 3. we push it to the queue
-        let verif = this._precheck(opts)
+        let verif = this._validateUserProcessed('node', opts)
 
         if (verif.hasError) return verif
 
         // AFTER ALL VERIFICATION,GIVE NODE AN UNIQUE ID FROM POOL
         // this option can be only assigned internally
-
-        opts['-node_id'] = this._getNextId('node')
+        let nId = this._getNextId('node')
+        opts['-node_id'] = nId
 
         //push to processing queue
         this.actionsQueue_.push({ 'type': 'createNode', 'opts': opts })
 
-        return { 'hasError': false, 'msg': 'create push added to queue' }
+        return { 'hasError': false, 'msg': 'Created Node with ID: ' + nId }
     }
 
     pushUpdateNode(opts) {
@@ -46,7 +52,7 @@ export class StateManager {
         // 2. we CHECK if the node id we want to target exists
         // 3. we update all the new opt state to the node
 
-        let verif = this._precheck(opts)
+        let verif = this._validateUserProcessed('node', opts)
 
         if (verif.hasError) return verif
 
@@ -55,9 +61,12 @@ export class StateManager {
         if (node === undefined) {
             return {
                 'hasError': true,
-                'msg': 'node id ' + opts['-id'] + ' has not been found'
+                'msg': 'Node Id ' + opts['-id'] + ' has not been found'
             }
         }
+
+        //nodes have a node_id internally, discard the passed '-id'
+        //in order to avoid duplication of same information
 
         delete opts['-id']
         for (const [opt, arg] of Object.entries(opts))
@@ -66,14 +75,13 @@ export class StateManager {
         //push to queue
         this.actionsQueue_.push({ 'type': 'updateNode', 'opts': node })
 
-        return { 'hasError': false, 'msg': 'update push added to queue' }
+        return { 'hasError': false, 'msg': 'Updated Node with ID:' + node['-node_id'] }
     }
 
     pushDeleteNode(node_id) {
         // 1. see if its really an int
         // 2. check to see it node exists
         // 3. remove the node ID from state
-        console.log(typeof node_id)
         if (isNaN(node_id) && isNaN(parseInt(node_id)))
             return {
                 'hasError': true,
@@ -97,6 +105,7 @@ export class StateManager {
 
     //this actually applies the states in the queue to the state_
     //called last
+    //returns the queue of pushes done, can be used by the user in the logic
     executePushed() {
 
         for (const act of this.actionsQueue_) {
@@ -116,18 +125,74 @@ export class StateManager {
                 //TBD
             }
         }
-        let q = this.actionsQueue_
+        let qActs = this.actionsQueue_
         this.actionsQueue_ = []
-        //this should only return the actions done THIS pass
-        console.log('State after cmd ', this.state_.nodes)
-
-        return { 'msg': q }
+        return { 'msg': qActs }
     }
+
+    getState() { return this.state_ }
 
     /* Utility */
     //those will act as the only available options internally
     //the user could define a custom option that ultimately uses
     //the internally defined ones
+    _validateUserProcessed(type, opts) {
+
+        delete opts['cmdName']
+
+        for (const [opt, arg] of Object.entries(opts)) {
+
+            if (type === 'node') {
+                let optNotSupported = !SupportedNodeOpts[opt].active
+
+                if (optNotSupported) {
+                    return {
+                        'hasError': true,
+                        'msg': "Option '" + opt + "' is not supported on nodes, check supported node operations first"
+                    }
+                }
+
+                let argType = SupportedNodeOpts[opt].type
+                let typeViolation = !SupportedValidators[argType](arg)
+
+                if (typeViolation) {
+                    return {
+                        'hasError': true,
+                        'msg': "Option '" + opt + "' is not of expected type or out of bounds assignment\
+                         error, check command logic definition"
+                    }
+                }
+
+            }
+            if (type === 'conn') { }
+        }
+        return { 'hasError': false, 'msg': 'Validation Success' }
+
+    }
+
+    _precheck(opts) {
+        // VERIFICATION
+        // we dont need the cmd name anymore
+        delete opts['cmdName']
+
+        //verify is opts are valid internal ones
+        //AND THAT ARGS HAVE THE INTENDED TYPE
+        for (const [opt, arg] of Object.entries(opts)) {
+            //CHECK OPT SUPPORT FOR 'NODE'
+            if (!this._isOptSupported('node', opt))
+                return {
+                    'hasError': true,
+                    'msg': "Option '" + opt + "' is not supported on nodes, check supported node operations first"
+                }
+            //CHECK IF ARG OF VALID TYPE
+            if (!this._isOfValidType(opt, arg))
+                return {
+                    'hasError': true,
+                    'msg': "Option '" + opt + "' is not of expected type or _va error, check command logic definitions"
+                }
+        }
+        return { 'hasError': false, 'msg': 'push added to queue' }
+    }
     _isOptSupported(type, opt) {
         //this should be extracted somewhere in a file along with validType
         const supportedNode = {
@@ -176,35 +241,13 @@ export class StateManager {
         }
         return validators[opts[opt]](arg)
     }
-    _precheck(opts) {
-        // VERIFICATION
-        // we dont need the cmd name anymore
-        delete opts['cmdName']
-
-        //verify is opts are valid internal ones
-        //AND THAT ARGS HAVE THE INTENDED TYPE
-        for (const [opt, arg] of Object.entries(opts)) {
-            //CHECK OPT SUPPORT FOR 'NODE'
-            if (!this._isOptSupported('node', opt))
-                return {
-                    'hasError': true,
-                    'msg': "Option '" + opt + "' is not supported on nodes, check supported node operations first"
-                }
-            //CHECK IF ARG OF VALID TYPE
-            if (!this._isOfValidType(opt, arg))
-                return {
-                    'hasError': true,
-                    'msg': "Option '" + opt + "' is not of expected type or _va error, check command logic definitions"
-                }
-        }
-        return { 'hasError': false, 'msg': 'push added to queue' }
-    }
 
     _getNextId(type) {
         if (type === 'node') return ++this.maxNodeId_
         if (type === 'conn') return ++this.maxConnId_
         return 'undefined type'
     }
+
     _dumpStateToFile() { }
     _loadStateFromFile() { }
 }

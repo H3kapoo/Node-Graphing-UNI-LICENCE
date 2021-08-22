@@ -1,7 +1,7 @@
 import { StateManager } from "../Canvas/StateManager"
 import { CommandParser } from "../Parser/CommandParser"
 import { CommandProcessor } from "../Processor/CommandProcessor"
-
+import { GraphRenderer } from "../Canvas/GraphRenderer"
 
 //NOTE: AN ERROR CREATOR HELPER CLASS SHOULD BE IMPLEMENTED
 //      AT SOME POINT TO PRETIFY THE OUTPUT
@@ -12,11 +12,12 @@ export class GraphManager {
     commandParser_ = new CommandParser()
     commandProcessor_ = new CommandProcessor()
     graphState_ = new StateManager()
-    // graphRenderer_ = new GraphRenderer()
+    graphRenderer_ = undefined
 
     constructor(canvasManager, cliManager) {
         this.canvasManager_ = canvasManager
         this.cliManager_ = cliManager
+        this.graphRenderer_ = new GraphRenderer(this.canvasManager_.getCanvasDetails())
     }
 
     compute(evt) {
@@ -43,10 +44,10 @@ export class GraphManager {
             return this.cliManager_.outputErr('[Process]', processedResult.msg)
 
         //6. do the rendering with updates applied TBD
-        // this.graphRenderer_(this.graphState_.getState())
+        this.graphRenderer_.render(this.graphState_.getState())
 
         //7. output to CLI the cmd output DONE
-        console.log('compute ', processedResult.msg)
+        console.log('graph ', this.graphState_.state_.nodes)
         this.cliManager_.outputStd('[GraphInfo]', processedResult.msg)
 
     }

@@ -1,9 +1,9 @@
 export class CanvasManager {
-    canvasObject = undefined
-    canvasCtx = undefined
+    canvasObject_ = undefined
+    canvasCtx_ = undefined
     constructor(canvasID) {
-        this.canvasObject = document.getElementById(canvasID)
-        this.canvasCtx = this.canvasObject.getContext('2d')
+        this.canvasObject_ = document.getElementById(canvasID)
+        this.canvasCtx_ = this.canvasObject_.getContext('2d')
         //verify if canvas exists
         this.setupCanvas()
     }
@@ -12,10 +12,13 @@ export class CanvasManager {
         //configs maybe read from a file at startup
         const canvasW = 1500
         const canvasH = 1500
-        this.canvasObject.width = canvasW
-        this.canvasObject.height = canvasH
+        this.canvasObject_.width = canvasW
+        this.canvasObject_.height = canvasH
     }
+
     //other configs
 
-    getCanvasCtx() { return this.canvasCtx ? this.canvasCtx : null }
+    getCanvasDetails() {
+        return [this.canvasCtx_ ? this.canvasCtx_ : null, this.canvasObject_.width, this.canvasObject_.height]
+    }
 }
