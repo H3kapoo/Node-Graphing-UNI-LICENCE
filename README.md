@@ -52,7 +52,7 @@ CLI$> node.update -id 1 -color blue
 
 ## ```Command File Anatomy```
 
-### Background
+### ```Background```
 Each command will be picked up by the app at start-up or when the user clicks the ```refresh commands``` option from the menu dropdowns. This will load all the command's in the app's memory from the ```path/from/where/to/load``` directory ready to be ran. <br/> By making them individual files has the advantage of easy distribution of custom commands to other users and the ability to only load/unload necessary commands. <br/>
 Every command file is one big JSON like object written in the ```.js``` extension consisting of two core parts:
 <ol>
@@ -76,7 +76,7 @@ data = {
 
 ```Note:``` The main encapsulating object name always needs to be called ```data``` like in the above example. All the necessary code that goes into ```"schema"``` and ```"logic"``` will be discussed in their unique sections bellow.
 
-### Command Schema
+### ```Command Schema```
 The command schema is used by the parsing stage to make sure the user inputted the right options with their according parameters as the creator of the command intended. The schema is the first user validation stage the inputted command goes thru.
 #### Layout of schema
 The command schema will always be composed of 2.5 main things: 
@@ -110,7 +110,7 @@ The ```Parser``` will spit diferent formats for the option depending on the argu
 arg type is: ends_in_Vec  => [simple,comma,separated,data,vector] => [..]
 arg type is: ends_in_Vecs => [[multiple,comma,separated],[comma,separated,arrays]] => [[..],[..]]
 ```
-### Example of a schema
+#### Example of a schema
 ```Note:``` All presented command examples are just EXAMPLES of how the command might work in production, don't take the behaviour for granted. <br/>
 ```Naming Note 1:``` As a good practice, if your command name has "multiple words" in it, separate them by a ```dot``` and not by ```doingThis``` or ```doing_this```,  although you're not forced to adhere to this good practice. <br/>
 ```Naming Note 2:``` If the commands act on nodes, it is a good and intuitive practice to name the command starting with ```node.``` + the name of the command. Same logic applies to the connections or whatever else the user decides to introduce (namespacing concept). <br/> <br/>
@@ -168,7 +168,7 @@ Example of a command that doesnt require anything from the user to run it's logi
 
 
 ## Internals mix
-### Internally defined commands
+### ```Internally defined commands```
   
   <details>
 
