@@ -51,16 +51,7 @@ CLI$> node.update -id 1 -color blue
 </details>
 
 ## ```Command File Anatomy```
-### Internally defined commands
-As of ```22-08-2021```, there are exactly ```3``` internally defined commands by the application itself:
 
-| command | mandatory | optional | description |
-|---|---|---|---|
-| ```node.make``` | ```pos<twoDimIntVecs>```| ```type<oneDimStringVec>``` | Creates group of nodes at given positions that are round by default.Type option can be used to change node appearance. |
-| ```node.update``` | ```id<oneDimIntVec>```  | ```color<oneDimStringVec``` <br/> ```radius<oneDimIntVec>```  | Updates the targeted node ids with the specified options. |
-| ```node.delete``` | ```id<oneDimIntVec>``` | ```None``` | Deletes the targeted nodes. |
-  
-  
 ### Background
 Each command will be picked up by the app at start-up or when the user clicks the ```refresh commands``` option from the menu dropdowns. This will load all the command's in the app's memory from the ```path/from/where/to/load``` directory ready to be ran. <br/> By making them individual files has the advantage of easy distribution of custom commands to other users and the ability to only load/unload necessary commands. <br/>
 Every command file is one big JSON like object written in the ```.js``` extension consisting of two core parts:
@@ -177,6 +168,25 @@ Example of a command that doesnt require anything from the user to run it's logi
 
 
 ## Internals mix
+### Internally defined commands
+  
+  <details>
+
+<summary>Click to open</summary>
+  
+As of ```22-08-2021```, there are exactly ```3``` internally defined commands by the application itself:
+
+| command | mandatory | optional | description |
+|---|---|---|---|
+| ```node.make``` | ```pos<twoDimIntVecs>```| ```type<oneDimStringVec>``` | Creates group of nodes at given positions that are round by default.Type option can be used to change node appearance. |
+| ```node.update``` | ```id<oneDimIntVec>```  | ```color<oneDimStringVec``` <br/> ```radius<oneDimIntVec>```  | Updates the targeted node ids with the specified options. |
+| ```node.delete``` | ```id<oneDimIntVec>``` | ```None``` | Deletes the targeted nodes. |
+  
+    
+  
+</details>
+
+  
 ### ```Internally supported options + types for nodes & connections```
 ```javascript
 //nodes
