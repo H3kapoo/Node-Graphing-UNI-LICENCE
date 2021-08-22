@@ -78,11 +78,11 @@ data = {
 ### Command Schema
 The command schema is used by the parsing stage to make sure the user inputted the right options with their according parameters as the creator of the command intended. The schema is the first user validation stage the inputted command goes thru.
 #### Layout of schema
-The command schema will always be composed of 3 main things: 
+The command schema will always be composed of 2.5 main things: 
 <ol>
   <li>the name of the command</li>
   <li>an array containing some mandatory parameters that the user is forced to input</li>
-  <li>the options themselves with the corresponding argument type</li>
+  <li>the options themselves with the corresponding argument type (optional) </li>
 </ol>
 Should look something like this:
 
@@ -110,24 +110,57 @@ arg type is: ends_in_Vec  => [simple,comma,separated,data,vector] => [..]
 arg type is: ends_in_Vecs => [[multiple,comma,separated],[comma,separated,arrays]] => [[..],[..]]
 ```
 ### Example of a schema
-A simple example of a schema of the command that let's the user change the color and radius of multiple nodes at once. The node's radius is not required for this command but the color option however is mandatory and the parser will throw an error if not inputted.
+```Note:``` All presented command examples are just EXAMPLES of how the command might work in production, don't take the behaviour for granted.
+
+A simple example of a schema of the command that let's the user change the color and radius of multiple node ids at once. The node's radius is not required for this command but the color and id option however is mandatory and the parser will throw an error if not inputted:
 
 ```javascript
-//CLI$> node.change -color red -radius 30
+//CLI$> node.change -id 3,5 -color red -radius 30
+{
+    "name": 'node.change',
+    "mandatory": ["-id","-color"],
+    "-id: : "oneDimIntVec",
+    "-color": "oneDimStringVec",
+    "-radius": "oneDimIntVec"
+}
+    //the above tokenizes in:
+{
+   "cmdName":"nodeChange",
+   "-id": [3,5],
+   "-color":["red"],
+   "-radius":[30]
+}
+```
+A more complicated example that uses the 'vecs' argument type to accept multiple groups of node ids and apply a color to each node id group:
+
+```javascript
+//CLI$> node.change -id 1,2|3,4 -color red -radius 30
 {
     "name": 'node.change',
     "mandatory": ["-color"],
     "-color": "oneDimStringVec",
     "-radius": "oneDimIntVec"
 }
+    //the above tokenizes in:
+{
+   "cmdName":"nodeChange",
+   "-id": [[1,2],[3,4]]
+   "-color":["red"],
+   "-radius":[30]
+}
 ```
 
-Example of a command that doesnt require anything from the user to run it's logic
+Example of a command that doesnt require anything from the user to run it's logic:
 ```javascript
 //CLI$> node.nothing
 {
     "name": 'node.nothing',
     "mandatory": []
+}
+
+    //the above tokenizes in:
+{
+   "cmdName":"nodeNothing",
 }
 ```
 
