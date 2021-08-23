@@ -21,7 +21,9 @@
     width: 100%;
     height: calc(100% - 36px); /*because of tabs height*/
     overflow: auto;
-    background-color: rgb(75, 75, 75);
+    /* background-color: rgb(75, 75, 75); */
+    background-color: rgb(255, 255, 255);
+
 }
 #canvas{
     overflow-x: auto;

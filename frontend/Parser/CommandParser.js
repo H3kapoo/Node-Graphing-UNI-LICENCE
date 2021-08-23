@@ -17,6 +17,8 @@ export class CommandParser {
             }
         }
 
+        //TODO: CHECK IF ITS A POSITIVE INTEGER!!!!!
+
         let cmdNameSplit = cmdArgs[0].split('.')
 
         for (let i = 1; i < cmdNameSplit.length; i++)

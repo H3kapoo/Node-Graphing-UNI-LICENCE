@@ -1,5 +1,9 @@
 export const CommandArgParser = {
-    //N_D_STRING_VECS - Todo a,b,c|d,g,e|...
+    //nDimStringVecs - Todo a,b,c|d,g,e|...
+    //oneString
+    //oneInt
+    //twoString
+    //twoInt
     oneDimStringVec(arg) {
         //c,b,a
         let splitted = arg.split(',')

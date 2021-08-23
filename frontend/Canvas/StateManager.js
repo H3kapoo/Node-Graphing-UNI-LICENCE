@@ -79,21 +79,21 @@ export class StateManager {
     }
 
     pushDeleteNode(node_id) {
-        // 1. see if its really an int
+        // 1. see if its really an int // THIS SHOULD NOT BE CHECKED IN HERE BUT AT THE PARSING STAGE
         // 2. check to see it node exists
         // 3. remove the node ID from state
-        if (isNaN(node_id) && isNaN(parseInt(node_id)))
-            return {
-                'hasError': true,
-                'msg': 'node id ' + node_id + ' should be INT but its not'
-            }
+        // if (isNaN(node_id) && isNaN(parseInt(node_id)))
+        //     return {
+        //         'hasError': true,
+        //         'msg': 'node id ' + node_id + ' should be INT but its not'
+        //     }
 
         let node = this.state_.nodes[node_id]
 
         if (node === undefined) {
             return {
                 'hasError': true,
-                'msg': "can't delete non existent node id " + node_id
+                'msg': "Can't delete non existent node id: " + node_id
             }
         }
 
@@ -139,6 +139,14 @@ export class StateManager {
     _validateUserProcessed(type, opts) {
 
         delete opts['cmdName']
+
+        //delete KEEP_UNCHANGED marked opts, those opts wont affect the graph info
+        for (const [opt, arg] of Object.entries(opts)) {
+            if (arg === "KEEP_UNCHANGED") {
+                delete opts[opt]
+                console.log('deleted ', opt, ' from validation')
+            }
+        }
 
         for (const [opt, arg] of Object.entries(opts)) {
 
