@@ -14,7 +14,20 @@ export class GraphRenderer {
         this._renderNodes(state.nodes)
     }
 
-    _renderConns(state) { }
+    _renderConns(state) {
+        for (const [_, connData] of Object.entries(state)) {
+
+            let pos_src = connData['-pos_src']
+            let pos_dest = connData['-pos_dest']
+            // console.log(id_src, id_dest)
+            //conn itself
+            this.ctx_.lineWidth = 4 //hardcoded
+            this.ctx_.beginPath();
+            this.ctx_.moveTo(pos_src[0], pos_src[1])
+            this.ctx_.lineTo(pos_dest[0], pos_dest[1])
+            this.ctx_.stroke()
+        }
+    }
 
     _renderNodes(state) {
 
@@ -38,7 +51,6 @@ export class GraphRenderer {
             this.ctx_.lineWidth = 2 //hardcoded
             this.ctx_.fillText(id.toString(), pos[0], pos[1])
             this.ctx_.strokeText(id.toString(), pos[0], pos[1])
-
         }
     }
 }

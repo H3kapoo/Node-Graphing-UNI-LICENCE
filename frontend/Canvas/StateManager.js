@@ -16,6 +16,12 @@ export class StateManager {
         }
     }
 
+    //assure existance
+    _assertNodeExists(id) {
+        return this.state_.nodes[opts['-id']] === undefined ? false : true
+    }
+
+    //only retrieve a copy,not the acutal obj (js reference shit)
     getNodeData() {
         return { ...this.state_.nodes }
     }
@@ -26,6 +32,7 @@ export class StateManager {
 
     //Indeed for now we expect all options to come as this [] and not as this [[]]
     //This might throw a problem in the future and it needs to be addressed
+
     pushCreateNode(opts) {
 
         // 1. here we verify all its ok for opts
@@ -72,7 +79,6 @@ export class StateManager {
         for (const [opt, arg] of Object.entries(opts))
             node[opt] = arg
 
-        //push to queue
         this.actionsQueue_.push({ 'type': 'updateNode', 'opts': node })
 
         return { 'hasError': false, 'msg': 'Updated Node with ID:' + node['-node_id'] }
@@ -82,11 +88,7 @@ export class StateManager {
         // 1. see if its really an int // THIS SHOULD NOT BE CHECKED IN HERE BUT AT THE PARSING STAGE
         // 2. check to see it node exists
         // 3. remove the node ID from state
-        // if (isNaN(node_id) && isNaN(parseInt(node_id)))
-        //     return {
-        //         'hasError': true,
-        //         'msg': 'node id ' + node_id + ' should be INT but its not'
-        //     }
+        //TODO 4: delete all connections assoc with this node_id
 
         let node = this.state_.nodes[node_id]
 
@@ -97,17 +99,84 @@ export class StateManager {
             }
         }
 
+        //find conns referenced by node and delete them
+        for (let i = 0; i < node['-conn_refs'].length; i++) {
+            let connId = node['-conn_refs'][i]
+            let stateResult = this.pushDeleteConn(connId)
+            if (stateResult.hasError) stateResult.msg
+        }
+
         this.actionsQueue_.push({ 'type': 'deleteNode', 'opts': node_id })
 
-        return { 'hasError': false, 'msg': 'delete push added to queue' }
-
+        return { 'hasError': false, 'msg': 'Deleted Node with ID:' + node_id }
     }
+
+    pushCreateConn(opts) {
+        // 1. here we verify all its ok for opts
+        // 2. assert node src and dest exist
+        // 3. we assign the 'to be created' node an unique ID
+        // 4. we push it to the queue
+        let verif = this._validateUserProcessed('conn', opts)
+
+        if (verif.hasError) return verif
+
+        if (this.state_.nodes[opts['-id_src']] === undefined ? true : false)
+            return {
+                'hasError': true,
+                'msg': `Node Id ${opts['-id_src']} doesn't exist`
+            }
+
+        if (this.state_.nodes[opts['-id_dest']] === undefined ? true : false)
+            return {
+                'hasError': true,
+                'msg': `Node Id ${opts['-id_dest']} doesn't exist`
+            }
+
+        let cId = this._getNextId('conn')
+        opts['-conn_id'] = cId
+        opts['-pos_src'] = this.state_.nodes[opts['-id_src']]['-pos']
+        opts['-pos_dest'] = this.state_.nodes[opts['-id_dest']]['-pos']
+
+        //add conn reference to this connected nodes
+        if (!this.state_.nodes[opts['-id_src']]['-conn_refs'])
+            this.state_.nodes[opts['-id_src']]['-conn_refs'] = []
+
+        if (!this.state_.nodes[opts['-id_dest']]['-conn_refs'])
+            this.state_.nodes[opts['-id_dest']]['-conn_refs'] = []
+
+        this.state_.nodes[opts['-id_dest']]['-conn_refs'].push(cId)
+        this.state_.nodes[opts['-id_src']]['-conn_refs'].push(cId)
+
+        //push to processing queue
+        this.actionsQueue_.push({ 'type': 'createConn', 'opts': opts })
+
+        return { 'hasError': false, 'msg': 'Created Conn with ID: ' + cId }
+    }
+
+    pushDeleteConn(conn_id) {
+        // 1. see if its really an int // THIS SHOULD NOT BE CHECKED IN HERE BUT AT THE PARSING STAGE
+        // 2. check to see it conn exists
+        // 3. remove the node ID from state
+
+        let conn = this.state_.conns[conn_id]
+
+        if (conn === undefined) {
+            return {
+                'hasError': true,
+                'msg': "Can't delete non existent conn id: " + conn_id
+            }
+        }
+
+        this.actionsQueue_.push({ 'type': 'deleteConn', 'opts': conn_id })
+
+        return { 'hasError': false, 'msg': 'Deleted Conn with ID:' + conn_id }
+    }
+
 
     //this actually applies the states in the queue to the state_
     //called last
     //returns the queue of pushes done, can be used by the user in the logic
     executePushed() {
-
         for (const act of this.actionsQueue_) {
             switch (act.type) {
                 case 'createNode':
@@ -118,13 +187,18 @@ export class StateManager {
                     delete this.state_.nodes[act.opts]
                     break
                 case 'createConn':
+                    this.state_.conns[act.opts['-conn_id']] = act.opts
+                    break
                 case 'updateConn':
                 case 'deleteConn':
+                    delete this.state_.conns[act.opts]
+                    break
                 case 'other':
                     break
                 //TBD
             }
         }
+
         let qActs = this.actionsQueue_
         this.actionsQueue_ = []
         return { 'msg': qActs }
@@ -142,21 +216,19 @@ export class StateManager {
 
         //delete KEEP_UNCHANGED marked opts, those opts wont affect the graph info
         for (const [opt, arg] of Object.entries(opts)) {
-            if (arg === "KEEP_UNCHANGED") {
+            if (arg === "KEEP_UNCHANGED")
                 delete opts[opt]
-                console.log('deleted ', opt, ' from validation')
-            }
         }
 
         for (const [opt, arg] of Object.entries(opts)) {
 
             if (type === 'node') {
-                let optNotSupported = !SupportedNodeOpts[opt].active
+                let optSupported = SupportedNodeOpts[opt] ? SupportedNodeOpts[opt].active : false
 
-                if (optNotSupported) {
+                if (!optSupported) {
                     return {
                         'hasError': true,
-                        'msg': "Option '" + opt + "' is not supported on nodes, check supported node operations first"
+                        'msg': "Option '" + opt + "' is not supported on nodes. Check supported node operations first."
                     }
                 }
 
@@ -167,87 +239,33 @@ export class StateManager {
                     return {
                         'hasError': true,
                         'msg': "Option '" + opt + "' is not of expected type or out of bounds assignment\
-                         error, check command logic definition"
+                         error.Check command logic definition for errors."
+                    }
+                }
+            }
+            if (type === 'conn') {
+                let optSupported = SupportedConnOpts[opt] ? SupportedConnOpts[opt].active : false
+
+                if (!optSupported) {
+                    return {
+                        'hasError': true,
+                        'msg': "Option '" + opt + "' is not supported on conns. Check supported conns operations first."
                     }
                 }
 
-            }
-            if (type === 'conn') { }
-        }
-        return { 'hasError': false, 'msg': 'Validation Success' }
+                let argType = SupportedConnOpts[opt].type
+                let typeViolation = !SupportedValidators[argType](arg)
 
-    }
-
-    _precheck(opts) {
-        // VERIFICATION
-        // we dont need the cmd name anymore
-        delete opts['cmdName']
-
-        //verify is opts are valid internal ones
-        //AND THAT ARGS HAVE THE INTENDED TYPE
-        for (const [opt, arg] of Object.entries(opts)) {
-            //CHECK OPT SUPPORT FOR 'NODE'
-            if (!this._isOptSupported('node', opt))
-                return {
-                    'hasError': true,
-                    'msg': "Option '" + opt + "' is not supported on nodes, check supported node operations first"
+                if (typeViolation) {
+                    return {
+                        'hasError': true,
+                        'msg': "Option '" + opt + "' is not of expected type or out of bounds assignment\
+                         error.Check command logic definition for errors."
+                    }
                 }
-            //CHECK IF ARG OF VALID TYPE
-            if (!this._isOfValidType(opt, arg))
-                return {
-                    'hasError': true,
-                    'msg': "Option '" + opt + "' is not of expected type or _va error, check command logic definitions"
-                }
-        }
-        return { 'hasError': false, 'msg': 'push added to queue' }
-    }
-    _isOptSupported(type, opt) {
-        //this should be extracted somewhere in a file along with validType
-        const supportedNode = {
-            "-radius": true,
-            "-pos": true,
-            "-color": true,
-            "-node_id": true,
-            "-type": true,
-            "-id": true,
-            "-others": false,
-        }
-        const supportedConn = {
-            "-color": true,
-            "-others": false,
-        }
-
-        if (type == 'node')
-            return supportedNode[opt] ? supportedNode[opt] : false
-        if (type == 'conn')
-            return supportedConn[opt] ? supportedConn[opt] : false
-
-        return "fatal error support opt"
-    }
-    _isOfValidType(opt, arg) {
-        const opts = {
-            "-radius": 'integer',
-            "-type": 'string',
-            "-pos": 'intPairVec',
-            "-color": 'string',
-            "-id": 'integer'
-        }
-
-        const validators = {
-            string(a) {
-                return (typeof a === 'string')
-            },
-            integer(a) {
-                return !isNaN(a) && !isNaN(parseInt(a))
-            },
-            intPairVec(a) {
-                if (a.length !== 2) return false
-
-                return !isNaN(a[0]) && !isNaN(parseInt(a[0])) &&
-                    !isNaN(a[1]) && !isNaN(parseInt(a[1]))
             }
         }
-        return validators[opts[opt]](arg)
+        return { 'hasError': false }
     }
 
     _getNextId(type) {

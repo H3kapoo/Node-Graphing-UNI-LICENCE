@@ -34,7 +34,17 @@ data = {
 
             let pushResult = state.executePushed()
 
-            return { 'msg': `Updated ${pushResult.msg.length} nodes` }
+            let msg = 'Updated node(s): '
+
+            pushResult.msg.forEach((act, index) => {
+                if (act.type == 'updateNode') {
+                    msg += 'id ' + act.opts['-node_id']
+                    if (index < pushResult.msg.length - 1)
+                        msg += ', '
+                }
+            });
+
+            return { msg }
 
         }
     }

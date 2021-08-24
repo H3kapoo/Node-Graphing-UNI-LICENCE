@@ -13,9 +13,9 @@ data = {
             const nodeTypes = parsedData['-radius'] || []
 
             for (let i = 0; i < nodePosVecs.length; i++) {
-                let data = { ...parsedData } //copy cus js reference sucks
+                let data = { ...parsedData }                 //copy cus js reference sucks
                 data['-pos'] = nodePosVecs[i]
-                data['-radius'] = nodeTypes[i] || 30 //empty for error, put int for default val
+                data['-radius'] = nodeTypes[i] || 30         // put int for default val
 
                 let stateResult = state.pushCreateNode(data) //error and msg if any
 
@@ -26,9 +26,17 @@ data = {
             //it returns the updates done as {} , can be used to
             //format a pretty output
             let pushResult = state.executePushed()
+            let msg = 'Created node(s): '
 
+            pushResult.msg.forEach((act, index) => {
+                if (act.type == 'createNode') {
+                    msg += 'id ' + act.opts['-node_id'] + ' at (' + act.opts['-pos'][0] + ',' + act.opts['-pos'][1] + ')'
+                    if (index < pushResult.msg.length - 1)
+                        msg += ', '
+                }
+            });
 
-            return { 'msg': `Created ${pushResult.msg.length} nodes` }
+            return { msg }
         }
     }
 }

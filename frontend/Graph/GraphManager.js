@@ -47,7 +47,7 @@ export class GraphManager {
         this.graphRenderer_.render(this.graphState_.getState())
 
         //7. output to CLI the cmd output DONE
-        console.log('graph ', this.graphState_.state_.nodes)
+        console.log('graph ', this.graphState_.state_)
         this.cliManager_.outputStd('[GraphInfo]', processedResult.msg)
 
     }

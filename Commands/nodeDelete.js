@@ -17,7 +17,9 @@ data = {
 
             let pushResult = state.executePushed()
 
-            return { 'msg': `Deleted ${pushResult.msg.length} nodes` }
+            let msg = 'Deleted node id(s): ' + parsedData['-id'].toString()
+
+            return { msg }
         }
     }
 

@@ -14,9 +14,12 @@ export const SupportedNodeOpts = {
 
 export const SupportedConnOpts = {
     "-color": { 'active': true, 'type': 'string' },
+    "-id_src": { 'active': true, 'type': 'integer' },
+    "-id_dest": { 'active': true, 'type': 'integer' },
     //..
 }
 
+//internal cmds arg validators
 export const SupportedValidators = {
     string(a) {
         return (typeof a === 'string')
