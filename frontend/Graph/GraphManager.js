@@ -25,31 +25,35 @@ export class GraphManager {
         //TODO: HANDLE CASES WHEN parsedResult.hasError IS UNDEFINED
         if (evt.which !== 13) return
 
-        //1. parse into data tokens DONE
-        let parsedResult = this.commandParser_.parse(this.cliManager_.getCLI().textContent)
+        //0. support for command chaining (&)
+        let splittedChain = this.cliManager_.getCLI().textContent.split('&')
 
-        //2. clear cli text after parse DONE
-        this.cliManager_.clearAfterDoneWithText()
+        for (let commandText of splittedChain) {
+            //1. parse into data tokens DONE
+            let parsedResult = this.commandParser_.parse(commandText)
 
-        //3. catch any errors thrown by parsing stage DONE
-        // console.log(parsedResult)
-        if (parsedResult.hasError)
-            return this.cliManager_.outputErr('[Parse]', parsedResult.msg)
+            //2. clear cli text after parse DONE
+            this.cliManager_.clearAfterDoneWithText()
 
-        //4. if parsed data is ok,process command on current state schema WORKING ON
-        let processedResult = this.commandProcessor_.process(this.graphState_, parsedResult)
+            //3. catch any errors thrown by parsing stage DONE
+            // console.log(parsedResult)
+            if (parsedResult.hasError)
+                return this.cliManager_.outputErr('[Parse]', parsedResult.msg)
 
-        //5. catch any errors thrown by process stage SEMI-DONE
-        if (processedResult.hasError)
-            return this.cliManager_.outputErr('[Process]', processedResult.msg)
+            //4. if parsed data is ok,process command on current state schema WORKING ON
+            let processedResult = this.commandProcessor_.process(this.graphState_, parsedResult)
 
-        //6. do the rendering with updates applied TBD
-        this.graphRenderer_.render(this.graphState_.getState())
+            //5. catch any errors thrown by process stage SEMI-DONE
+            if (processedResult.hasError)
+                return this.cliManager_.outputErr('[Process]', processedResult.msg)
 
-        //7. output to CLI the cmd output DONE
-        console.log('graph ', this.graphState_.state_)
-        this.cliManager_.outputStd('[GraphInfo]', processedResult.msg)
+            //6. do the rendering with updates applied TBD
+            this.graphRenderer_.render(this.graphState_.getState())
 
+            //7. output to CLI the cmd output DONE
+            console.log('graph ', this.graphState_.state_)
+            this.cliManager_.outputStd('[GraphInfo]', processedResult.msg)
+        }
     }
 
     start() { this.cliManager_.getCLI().addEventListener('keyup', e => this.compute(e)) }

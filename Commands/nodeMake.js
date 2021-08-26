@@ -15,7 +15,7 @@ data = {
             for (let i = 0; i < nodePosVecs.length; i++) {
                 let data = { ...parsedData }                 //copy cus js reference sucks
                 data['-pos'] = nodePosVecs[i]
-                data['-radius'] = nodeTypes[i] || 30         // put int for default val
+                data['-radius'] = nodeTypes[i] || "KEEP_UNCHANGED"         // put int for default val
 
                 let stateResult = state.pushCreateNode(data) //error and msg if any
 

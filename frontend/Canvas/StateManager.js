@@ -16,11 +16,6 @@ export class StateManager {
         }
     }
 
-    //assure existance
-    _assertNodeExists(id) {
-        return this.state_.nodes[opts['-id']] === undefined ? false : true
-    }
-
     //only retrieve a copy,not the acutal obj (js reference shit)
     getNodeData() {
         return { ...this.state_.nodes }
@@ -134,8 +129,6 @@ export class StateManager {
 
         let cId = this._getNextId('conn')
         opts['-conn_id'] = cId
-        opts['-pos_src'] = this.state_.nodes[opts['-id_src']]['-pos']
-        opts['-pos_dest'] = this.state_.nodes[opts['-id_dest']]['-pos']
 
         //add conn reference to this connected nodes
         if (!this.state_.nodes[opts['-id_src']]['-conn_refs'])
@@ -151,6 +144,39 @@ export class StateManager {
         this.actionsQueue_.push({ 'type': 'createConn', 'opts': opts })
 
         return { 'hasError': false, 'msg': 'Created Conn with ID: ' + cId }
+    }
+
+    pushUpdateConn(opts) {
+
+        // 1. here we verify all its ok for opts
+        // 2. we CHECK if the node id we want to target exists
+        // 3. we update all the new opt state to the node
+
+        let verif = this._validateUserProcessed('conn', opts)
+
+        if (verif.hasError) return verif
+
+        let conn = this.state_.conns[opts['-id']]
+
+        if (conn === undefined) {
+            return {
+                'hasError': true,
+                'msg': 'Conn Id ' + opts['-id'] + ' has not been found'
+            }
+        }
+
+        //conns have a conn_id internally, discard the passed '-id'
+        //in order to avoid duplication of same information
+
+        delete opts['-id']
+
+        //apply opts
+        for (const [opt, arg] of Object.entries(opts))
+            conn[opt] = arg
+
+        this.actionsQueue_.push({ 'type': 'updateConn', 'opts': conn })
+
+        return { 'hasError': false, 'msg': 'Updated Conn with ID:' + conn['-conn_id'] }
     }
 
     pushDeleteConn(conn_id) {
@@ -172,7 +198,6 @@ export class StateManager {
         return { 'hasError': false, 'msg': 'Deleted Conn with ID:' + conn_id }
     }
 
-
     //this actually applies the states in the queue to the state_
     //called last
     //returns the queue of pushes done, can be used by the user in the logic
@@ -187,15 +212,12 @@ export class StateManager {
                     delete this.state_.nodes[act.opts]
                     break
                 case 'createConn':
+                case 'updateConn':
                     this.state_.conns[act.opts['-conn_id']] = act.opts
                     break
-                case 'updateConn':
                 case 'deleteConn':
                     delete this.state_.conns[act.opts]
                     break
-                case 'other':
-                    break
-                //TBD
             }
         }
 
