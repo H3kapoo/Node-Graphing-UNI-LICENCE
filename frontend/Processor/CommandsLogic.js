@@ -1,3 +1,4 @@
+/*Commands loaded will be populated in here, some helper functions already live here*/
 export let CommandsLogic = {
     get(po, opt) {
         if (po[opt])

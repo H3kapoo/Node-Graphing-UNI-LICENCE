@@ -1,23 +1,22 @@
-import { CommandsSchemas } from "./CommandsSchemas" //this will be replaced with a file in the future
+/*Internal Imports*/
+import { CommandsSchemas } from "./CommandsSchemas"
 import { CommandArgParser } from "./CommandArgParser"
 
+/*Class that handles user input parsing from CLI*/
 export class CommandParser {
+    /*Public funcs*/
     parse(CLIText) {
-
+        let stateChangeMap = {}
         const cmdArgs = CLIText.replace(/\s+/g, ' ').split(' ').filter(el => el.length !== 0)
 
-        let stateChangeMap = {}
-
-        if (!cmdArgs.length) return { hasError: "false", "msg": "Empty.Nothing to do" }
+        if (!cmdArgs.length) return { hasError: "false", "msg": "Line empty.Nothing to do!" }
 
         if (!CommandsSchemas[cmdArgs[0]]) {
             return {
                 "hasError": true,
-                "msg": "Command '" + cmdArgs[0] + "' doesn't exist"
+                "msg": `Command '${cmdArgs[0]}' doesn't exist!`
             }
         }
-
-        //TODO: CHECK IF ITS A POSITIVE INTEGER!!!!!
 
         let cmdNameSplit = cmdArgs[0].split('.')
 
@@ -36,38 +35,39 @@ export class CommandParser {
             if (!CommandsSchemas[cmdArgs[0]][opt]) {
                 return {
                     "hasError": true,
-                    "msg": "There is no option " + opt + " for command " + cmdArgs[0]
+                    "msg": `There is no option '${opt}' for command: ${cmdArgs[0]} .`
                 }
             }
 
             if (optArg == null) {
                 return {
                     "hasError": true,
-                    "msg": "There is no value for option " + opt
+                    "msg": `There is no argument for option: ${opt} .`
                 }
             }
 
-            //parsing of the actual cmd using the schemas
+            /*Parsing of the actual cmd opt args using the schemas*/
             if (!CommandArgParser[CommandsSchemas[cmdArgs[0]][opt]]) {
                 return {
                     "hasError": true,
-                    "msg": "There is no SCHEMA_ARG_TYPE to parse this arg,check for misspelling"
+                    "msg": "There is no argument schema to parse this argument,\
+                            check for misspelling in the command schema."
                 }
             }
 
             stateChangeMap[opt] = CommandArgParser[CommandsSchemas[cmdArgs[0]][opt]](optArg)
 
-            //bubble up more ERRORS from cmd arg parser here :) to be caught
+            /*Bubble up more Erros from cmd arg parser here :) to be caught*/
             if (stateChangeMap[opt].hasError)
                 return stateChangeMap[opt]
         }
 
-        //check if all the mandatory opts are there
+        /*Check if all the mandatory opts are there*/
         for (let mandatory of CommandsSchemas[cmdArgs[0]].mandatory) {
             if (!stateChangeMap[mandatory]) {
                 return {
                     "hasError": true,
-                    "msg": "Mandatory opt " + mandatory + " not found"
+                    "msg": `Mandatory option: '${mandatory}' not present!`
                 }
             }
         }
@@ -75,7 +75,6 @@ export class CommandParser {
     }
 
     /* Utility */
-
     _isArgThere(cmdTokens, i) { return cmdTokens[i] !== null }
 
 }

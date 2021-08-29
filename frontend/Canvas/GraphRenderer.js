@@ -1,54 +1,56 @@
 import * as utils from './RendererUtils'
 
+/*Class that handles the rendering of canvas elements*/
 export class GraphRenderer {
     ctx_ = undefined
-    width_ = undefined
-    height_ = undefined
+    _width_ = undefined
+    _height_ = undefined
     constructor(canvasDetails) {
         this.ctx_ = canvasDetails[0]
-        this.width_ = canvasDetails[1]
-        this.height_ = canvasDetails[2]
+        this._width_ = canvasDetails[1]
+        this._height_ = canvasDetails[2]
     }
 
+    /*Public funcs*/
     render(state) {
-        this.ctx_.clearRect(0, 0, this.width_, this.height_)
+        this.ctx_.clearRect(0, 0, this._width_, this._height_)
         this.renderGrid()
         this._renderConns(state)
         this._renderNodes(state)
     }
 
     renderGrid(spacing = 100) {
-        //TODO
-        for (let x = spacing; x < this.width_; x += spacing)
-            for (let y = spacing; y < this.height_; y += spacing) {
+        for (let x = spacing; x < this._width_; x += spacing)
+            for (let y = spacing; y < this._height_; y += spacing) {
                 let text = x.toString() + ',' + y.toString()
-                utils._debugText(this.ctx_, [x, y], text)
+                utils.debugText(this.ctx_, [x, y], text)
             }
 
-        for (let y = 0; y < this.height_; y += spacing)
-            utils._debugLine(this.ctx_, [0, y], [this.width_, y])
+        for (let y = 0; y < this._height_; y += spacing)
+            utils.debugLine(this.ctx_, [0, y], [this._width_, y])
 
-        for (let x = 0; x < this.width_; x += spacing)
-            utils._debugLine(this.ctx_, [x, 0], [x, this.height_])
+        for (let x = 0; x < this._width_; x += spacing)
+            utils.debugLine(this.ctx_, [x, 0], [x, this._height_])
 
     }
 
+    /*Private funcs*/
     _renderConns(state) {
         for (const [_, connData] of Object.entries(state.conns)) {
 
-            let srcPos = utils._getNodeData(state.nodes[connData['-id_src']], '-pos')
-            let destPos = utils._getNodeData(state.nodes[connData['-id_dest']], '-pos')
-            let srcRad = utils._getNodeData(state.nodes[connData['-id_src']], '-radius')
-            let destRad = utils._getNodeData(state.nodes[connData['-id_dest']], '-radius')
-            let color = utils._getConnData(connData, '-color')
-            let directed = utils._getConnData(connData, '-directed')
-            let elev = utils._getConnData(connData, '-elev')
+            let srcPos = utils.getNodeData(state.nodes[connData['-id_src']], '-pos')
+            let destPos = utils.getNodeData(state.nodes[connData['-id_dest']], '-pos')
+            let srcRad = utils.getNodeData(state.nodes[connData['-id_src']], '-radius')
+            let destRad = utils.getNodeData(state.nodes[connData['-id_dest']], '-radius')
+            let color = utils.getConnData(connData, '-color')
+            let directed = utils.getConnData(connData, '-directed')
+            let elev = utils.getConnData(connData, '-elev')
 
-            let res = utils._getBezierPointsWithCpElevationAndRadius(srcPos, destPos, srcRad, destRad, elev)
+            let res = utils.getBezierPointsWithCpElevationAndRadius(srcPos, destPos, srcRad, destRad, elev)
 
-            //draw with arrow
+            /* Draw with arrow */
             if (directed) {
-                let arrowPoints = utils._getArrowPoints(res.lineEnd, res.cpPos)
+                let arrowPoints = utils.getArrowPoints(res.lineEnd, res.cpPos)
                 this.ctx_.beginPath()
                 this.ctx_.fillStyle = 'black'
                 this.ctx_.lineWidth = 4 //hardcoded
@@ -58,10 +60,8 @@ export class GraphRenderer {
                 this.ctx_.lineTo(arrowPoints.p3[0], arrowPoints.p3[1])
                 this.ctx_.fill()
             }
-            //cp
-            // this._debugNode([res.cpPos[0], res.cpPos[1]])
 
-            //the curve
+            /* Curve */
             this.ctx_.beginPath()
             this.ctx_.strokeStyle = color
             this.ctx_.lineWidth = 4 //hardcoded
@@ -76,9 +76,9 @@ export class GraphRenderer {
     _renderNodes(state) {
 
         for (const [_, nodeData] of Object.entries(state.nodes)) {
-            let pos = utils._getNodeData(nodeData, '-pos')
-            let id = utils._getNodeData(nodeData, '-node_id')
-            let radius = utils._getNodeData(nodeData, '-radius')
+            let pos = utils.getNodeData(nodeData, '-pos')
+            let id = utils.getNodeData(nodeData, '-node_id')
+            let radius = utils.getNodeData(nodeData, '-radius')
 
             //node itself
             this.ctx_.beginPath()

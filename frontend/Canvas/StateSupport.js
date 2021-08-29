@@ -1,6 +1,5 @@
-//file containing the internal node/conns possible states and their types
+/*File containing the internal node/conns possible states and their types and availability*/
 
-//opts the node can have and the RENDERER can ultimately make use of
 export const SupportedNodeOpts = {
     "-radius": { 'active': true, 'type': 'integer' },
     "-pos": { 'active': true, 'type': 'intPairVec' },
@@ -20,11 +19,10 @@ export const SupportedConnOpts = {
     "-color": { 'active': true, 'type': 'string' },
     "-directed": { 'active': true, 'type': 'boolean' }, //TODO: maybe change those to take only selective strings
     "-elev": { 'active': true, 'type': 'integer' }
-
     //..
 }
 
-//internal cmds arg validators
+/*Internal cmds arg validators*/
 export const SupportedValidators = {
     boolean(a) {
         return (typeof a === 'boolean')

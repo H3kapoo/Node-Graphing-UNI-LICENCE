@@ -1,9 +1,6 @@
+/*User argument validators/parsers*/
+//WARN: DON'T REFACTOR FOR NOW 29.08
 export const CommandArgParser = {
-    //nDimStringVecs - Todo a,b,c|d,g,e|...
-    //oneString
-    //oneInt
-    //twoString
-    //twoInt
     oneDimStringVec(arg) {
         //c,b,a
         let splitted = arg.split(',')
