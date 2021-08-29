@@ -137,6 +137,8 @@ export class StateManager {
         if (!this.state_.nodes[opts['-id_dest']]['-conn_refs'])
             this.state_.nodes[opts['-id_dest']]['-conn_refs'] = []
 
+
+        //TODO: create adj list for nodes of conn
         this.state_.nodes[opts['-id_dest']]['-conn_refs'].push(cId)
         this.state_.nodes[opts['-id_src']]['-conn_refs'].push(cId)
 

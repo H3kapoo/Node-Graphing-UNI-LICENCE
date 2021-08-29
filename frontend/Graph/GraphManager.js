@@ -54,6 +54,8 @@ export class GraphManager {
             console.log('graph ', this.graphState_.state_)
             this.cliManager_.outputStd('[GraphInfo]', processedResult.msg)
         }
+
+
     }
 
     start() { this.cliManager_.getCLI().addEventListener('keyup', e => this.compute(e)) }

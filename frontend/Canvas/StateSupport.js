@@ -18,12 +18,17 @@ export const SupportedConnOpts = {
     "-id_src": { 'active': true, 'type': 'integer' },
     "-id_dest": { 'active': true, 'type': 'integer' },
     "-color": { 'active': true, 'type': 'string' },
+    "-directed": { 'active': true, 'type': 'boolean' }, //TODO: maybe change those to take only selective strings
+    "-elev": { 'active': true, 'type': 'integer' }
 
     //..
 }
 
 //internal cmds arg validators
 export const SupportedValidators = {
+    boolean(a) {
+        return (typeof a === 'boolean')
+    },
     string(a) {
         return (typeof a === 'string')
     },

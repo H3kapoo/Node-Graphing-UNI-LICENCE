@@ -1,6 +1,12 @@
 export let CommandsLogic = {
-    _va(arg, i) {
-        if (arg === undefined || i >= arg.length) return undefined
-        return arg[i]
+    get(po, opt) {
+        if (po[opt])
+            return po[opt]
+        return []
+    },
+    set(val, fallback = "KEEP_UNCHANGED") {
+        if (val === undefined) return fallback
+        return val
     }
+
 }

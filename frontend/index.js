@@ -11,6 +11,7 @@ const cliTabManager_ = new CLITabManager('cli-textarea')
 const canvasManager_ = new CanvasManager('canvas')
 const graphManager_ = new GraphManager(canvasManager_, cliTabManager_)
 graphManager_.start()
+graphManager_.graphRenderer_.renderGrid(100)
 
 //split into 2 parts
 Split(['#left-side', '#right-side'], { sizes: [65, 35] })
@@ -32,10 +33,13 @@ window.api.receive('nodify-reload-cmds-short', (evt, args) => {
 refreshCommands()
 
 function refreshCommands() {
-    let _va = CommandsLogic._va
+    let getFunc = CommandsLogic.get
+    let setFunc = CommandsLogic.set
+
     CommandsSchemas = {}
     CommandsLogic = {}
-    CommandsLogic['_va'] = _va
+    CommandsLogic['get'] = getFunc
+    CommandsLogic['set'] = setFunc
 
     let filePaths = window.api.send('nodify-reload-cmds', {})
 

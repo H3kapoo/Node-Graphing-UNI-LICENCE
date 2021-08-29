@@ -1,21 +1,19 @@
 data = {
     "schema": {
-        "name": "conn.undir",
+        "name": "conn.dir",
         "mandatory": ["-id"],
-        "-id": "twoDimIntVecs",
-        '-elev': "oneDimIntVec"
+        "-id": "twoDimIntVecs"
     },
     "logic": {
-        "name": "connUndir",
-        connUndir(parsedData, state) {
-            let ids = this.get(parsedData, '-id')
-            let elev = this.get(parsedData, '-elev')
-            console.log(elev)
+        "name": "connDir",
+        connDir(parsedData, state) {
+            let ids = parsedData['-id']
+
             for (let i = 0; i < ids.length; i++) {
                 let data = {}
-                data['-id_src'] = this.set(ids[i][0])
-                data['-id_dest'] = this.set(ids[i][1])
-                data['-elev'] = this.set(elev[i])
+                data['-id_src'] = ids[i][0]
+                data['-id_dest'] = ids[i][1]
+                data['-directed'] = true
 
                 let stateResult = state.pushCreateConn(data)
 
