@@ -13,10 +13,18 @@ export class GraphManager {
     graphState_ = new StateManager()
     graphRenderer_ = undefined
 
+    _indexingFlag_ = false
+
     constructor(canvasManager, cliManager) {
         this._canvasManager_ = canvasManager
         this._cliManager_ = cliManager
         this.graphRenderer_ = new GraphRenderer(this._canvasManager_.getCanvasDetails())
+
+        /*Backend comms*/
+        window.api.receive('nodify-indexing-artifacts-toggle', (evt, args) => {
+            this._indexingFlag_ = !this._indexingFlag_
+            this.graphRenderer_.render(this.graphState_.getState(), this._indexingFlag_)
+        })
     }
 
     /*Public funcs*/
@@ -45,7 +53,7 @@ export class GraphManager {
                 return this._cliManager_.outputErr('[Process]', processedResult.msg)
 
             /*6. Do the rendering with updates applied */
-            this.graphRenderer_.render(this.graphState_.getState())
+            this.graphRenderer_.render(this.graphState_.getState(), this._indexingFlag_)
 
             /*7. Output to CLI the cmd output */
             this._cliManager_.outputStd('[GraphInfo]', processedResult.msg)

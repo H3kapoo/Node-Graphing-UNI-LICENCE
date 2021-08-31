@@ -9,5 +9,4 @@ export let CommandsLogic = {
         if (val === undefined) return fallback
         return val
     }
-
 }

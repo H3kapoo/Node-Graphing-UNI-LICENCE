@@ -62,6 +62,36 @@ export function getBezierPointsWithCpElevationAndRadius(srcPos, destPos, srcRadi
     return { lineStart, cpPos, lineEnd }
 }
 
+export function getConnIndexingPointWithElev(srcPos, controlPos, destPos, indexElev) {
+
+    let t = 0.5
+    let x = controlPos[0] + (1 - t) * (1 - t) * (srcPos[0] - controlPos[0]) + t * t * (destPos[0] - controlPos[0])
+    let y = controlPos[1] + (1 - t) * (1 - t) * (srcPos[1] - controlPos[1]) + t * t * (destPos[1] - controlPos[1])
+
+    let midPoint = middle(srcPos, destPos)
+    let vecToDestPos = sub(destPos, srcPos)
+    let vecToDestPos01 = norm(vecToDestPos)
+    let forwardVec = [0, 0, 1]
+    let backwardVec = [0, 0, -1]
+
+    let dir3dToDestPos = [vecToDestPos01[0], vecToDestPos01[1], 0]
+    let cpPos = ''
+    if (indexElev >= 0)
+        cpPos = cross(dir3dToDestPos, forwardVec)
+    else
+        cpPos = cross(dir3dToDestPos, backwardVec)
+
+    cpPos = scalarMult3d(cpPos, indexElev) // move cp 'elev' pixels up perpendicular to vecToDestPos line
+    cpPos[0] += midPoint[0]
+    cpPos[1] += midPoint[1]
+
+    let dir = sub(cpPos, midPoint)
+    dir = norm(dir)
+    dir = scalarMult2d(dir, indexElev)
+    let indexingPos = [x + dir[0], y + dir[1]]
+    return indexingPos
+}
+
 export function debugText(ctx_, pos, text) {
     ctx_.font = '0.60em Courier New'
     ctx_.strokeStyle = "#00000011"

@@ -27,7 +27,6 @@ new Tabby('[data-tabs-right]');
 
 /*Init code*/
 graphManager_.start()
-graphManager_.graphRenderer_.renderGrid()
 
 /*Backend comms*/
 window.api.receive('nodify-reload-cmds-short', (evt, args) => refreshCommands())

@@ -1,6 +1,337 @@
 /*User argument validators/parsers*/
 //WARN: DON'T REFACTOR FOR NOW 29.08
 export const CommandArgParser = {
+
+    //example: a
+    oneString(arg) {
+        if (this.stringVec(arg).length === 1)
+            return this.stringVec(arg)
+        else
+            return {
+                "hasError": true,
+                "msg": `Schema type doesn't accept multiple string values! Only one!`
+            }
+    },
+
+    //example: 1
+    onePositiveInt(arg) {
+        let res = this.positiveIntVec(arg)
+        if (res.hasError)
+            return res
+        else if (res.length === 1)
+            return res
+        else
+            return {
+                "hasError": true,
+                "msg": `Schema type doesn't accept multiple positive int values! Only one!`
+            }
+    },
+
+    //example: -3
+    oneNumberInt(arg) {
+        let res = this.numberIntVec(arg)
+        if (res.hasError)
+            return res
+        else if (res.length === 1)
+            return res
+        else
+            return {
+                "hasError": true,
+                "msg": `Schema type doesn't accept multiple positive int values! Only one!`
+            }
+    },
+
+    //example: a,b
+    twoString(arg) {
+        if (this.stringVec(arg).length === 2)
+            return this.stringVec(arg)
+        else
+            return {
+                "hasError": true,
+                "msg": `Argument type must be string pair but it's not in ${arg} !`
+            }
+    },
+
+    //example: 1,2
+    twoPositiveInt(arg) {
+        let res = this.positiveIntVec(arg)
+        if (res.hasError)
+            return res
+        else if (res.length === 2)
+            return res
+        else
+            return {
+                "hasError": true,
+                "msg": `Argument type must be positive int pair but it's not in ${arg}`
+            }
+    },
+
+    //example: -3,2
+    twoNumberInt(arg) {
+        let res = this.numberIntVec(arg)
+        if (res.hasError)
+            return res
+        else if (res.length === 2)
+            return res
+        else
+            return {
+                "hasError": true,
+                "msg": `Argument type must be int pair but it's not in ${arg}`
+            }
+    },
+
+    //example: a,b,c,...
+    stringVec(arg) {
+
+        let splitted = arg.split(',')
+        let res = []
+
+        if (arg[0] === ',' || arg[arg.length - 1] === ',')
+            return {
+                "hasError": true,
+                "msg": `Trailing comma is invalid at arg: ${arg} !`
+            }
+
+        for (let i = 0; i < splitted.length; i++)
+            res.push(splitted[i])
+
+        return res
+    },
+
+    //example: 1,2,3,...
+    positiveIntVec(arg) {
+        let splitted = arg.split(',')
+        let res = []
+
+        if (arg[0] === ',' || arg[arg.length - 1] === ',')
+            return {
+                "hasError": true,
+                "msg": `Trailing comma is invalid at arg: ${arg} !`
+            }
+
+        for (let i = 0; i < splitted.length; i++) {
+            if (!this._isValidPositiveInt(splitted[i]))
+                return {
+                    "hasError": true,
+                    "msg": `${splitted[i]} must be a positive integer in: ${arg} but it's not!`
+                }
+            res.push(parseInt(splitted[i]))
+        }
+        return res
+    },
+
+    //example: -1,2,-9,...
+    numberIntVec(arg) {
+        let splitted = arg.split(',')
+        let res = []
+
+        if (arg[0] === ',' || arg[arg.length - 1] === ',')
+            return {
+                "hasError": true,
+                "msg": `Trailing comma is invalid at arg: ${arg} !`
+            }
+
+        for (let i = 0; i < splitted.length; i++) {
+            if (!this._isValidInt(splitted[i]))
+                return {
+                    "hasError": true,
+                    "msg": `${splitted[i]} must be an integer in: ${arg} but it's not!`
+                }
+            res.push(parseInt(splitted[i]))
+        }
+        return res
+    },
+
+    //example: a,b|c,d|...
+    twoStringVecs(arg) {
+        let splitted = arg.split('|')
+        let res = []
+
+        for (let i = 0; i < splitted.length; i++) {
+            let res2 = []
+
+            if (splitted[i][0] === ',' || splitted[i][splitted[i].length - 1] === ',')
+                return {
+                    "hasError": true,
+                    "msg": `Trailing comma is invalid at arg ${splitted[i]} !`
+                }
+
+            let splitted2 = splitted[i].split(',')
+
+            if (splitted2.length !== 2)
+                return {
+                    "hasError": true,
+                    "msg": `Argument must be string pair but its not: ${splitted[i]}`
+                }
+
+            res2.push(splitted2[0], splitted2[1])
+            res.push(res2)
+        }
+        return res
+    },
+
+    //example: a,b|c,d|...
+    twoPositiveIntVecs(arg) {
+        let splitted = arg.split('|')
+        let res = []
+
+        for (let i = 0; i < splitted.length; i++) {
+            let res2 = []
+
+            if (splitted[i][0] === ',' || splitted[i][splitted[i].length - 1] === ',')
+                return {
+                    "hasError": true,
+                    "msg": `Trailing comma is invalid at arg ${splitted[i]} !`
+                }
+
+            let splitted2 = splitted[i].split(',')
+
+            if (splitted2.length !== 2)
+                return {
+                    "hasError": true,
+                    "msg": `Argument must be int pair but its not: ${splitted[i]}`
+                }
+
+            if (!this._isValidPositiveInt(splitted2[0]))
+                return {
+                    "hasError": true,
+                    "msg": `${splitted2[0]} must be a positive Int in: ${splitted[i]} but it's not!`
+                }
+
+            if (!this._isValidPositiveInt(splitted2[1]))
+                return {
+                    "hasError": true,
+                    "msg": `${splitted2[1]} must be a positive Int in: ${splitted[i]} but it's not!`
+                }
+
+            res2.push(parseInt(splitted2[0]), parseInt(splitted2[1]))
+            res.push(res2)
+        }
+        return res
+    },
+
+    //example: 1,2|3,4|...
+    twoNumberIntVecs(arg) {
+        let splitted = arg.split('|')
+        let res = []
+
+        for (let i = 0; i < splitted.length; i++) {
+            let res2 = []
+
+            if (splitted[i][0] === ',' || splitted[i][splitted[i].length - 1] === ',')
+                return {
+                    "hasError": true,
+                    "msg": `Trailing comma is invalid at arg ${splitted[i]} !`
+                }
+
+            let splitted2 = splitted[i].split(',')
+
+            if (splitted2.length !== 2)
+                return {
+                    "hasError": true,
+                    "msg": `Argument must be int pair but its not: ${splitted[i]}`
+                }
+
+            if (!this._isValidInt(splitted2[0]))
+                return {
+                    "hasError": true,
+                    "msg": `${splitted2[0]} must be an Int in: ${splitted[i]} but it's not!`
+                }
+
+            if (!this._isValidInt(splitted2[1]))
+                return {
+                    "hasError": true,
+                    "msg": `${splitted2[1]} must be an Int in: ${splitted[i]} but it's not!`
+                }
+
+            res2.push(parseInt(splitted2[0]), parseInt(splitted2[1]))
+            res.push(res2)
+        }
+        return res
+    },
+
+    //example: a|e,d,c,d|g,f|...
+    stringVecs(arg) {
+        let splitted = arg.split('|')
+        let res = []
+
+        for (let i = 0; i < splitted.length; i++) {
+            let res2 = []
+
+            if (splitted[i][0] === ',' || splitted[i][splitted[i].length - 1] === ',')
+                return {
+                    "hasError": true,
+                    "msg": `Trailing comma is invalid at arg ${splitted[i]} !`
+                }
+
+            let splitted2 = splitted[i].split(',')
+
+            for (let j = 0; j < splitted2.length; j++)
+                res2.push(parseInt(splitted2[j]))
+            res.push(res2)
+        }
+        return res
+    },
+
+    //example: 1|2,3,5,6|7,8|...
+    positiveIntVecs(arg) {
+        let splitted = arg.split('|')
+        let res = []
+
+        for (let i = 0; i < splitted.length; i++) {
+            let res2 = []
+
+            if (splitted[i][0] === ',' || splitted[i][splitted[i].length - 1] === ',')
+                return {
+                    "hasError": true,
+                    "msg": `Trailing comma is invalid at arg ${splitted[i]} !`
+                }
+
+            let splitted2 = splitted[i].split(',')
+
+            for (let j = 0; j < splitted2.length; j++) {
+                if (!this._isValidPositiveInt(splitted2[j]))
+                    return {
+                        "hasError": true,
+                        "msg": `${splitted2} must be a positive Int in: ${splitted2} but it's not!`
+                    }
+                res2.push(parseInt(splitted2[j]))
+            }
+            res.push(res2)
+        }
+        return res
+    },
+
+    //example: -1|2,-3,5,6|7,-8|...
+    numberIntVecs(arg) {
+        let splitted = arg.split('|')
+        let res = []
+
+        for (let i = 0; i < splitted.length; i++) {
+            let res2 = []
+
+            if (splitted[i][0] === ',' || splitted[i][splitted[i].length - 1] === ',')
+                return {
+                    "hasError": true,
+                    "msg": `Trailing comma is invalid at arg ${splitted[i]} !`
+                }
+
+            let splitted2 = splitted[i].split(',')
+
+            for (let j = 0; j < splitted2.length; j++) {
+                if (!this._isValidInt(splitted2[j]))
+                    return {
+                        "hasError": true,
+                        "msg": `${splitted2} must be an Int in: ${splitted2} but it's not!`
+                    }
+                res2.push(parseInt(splitted2[j]))
+            }
+            res.push(res2)
+        }
+        return res
+    },
+
+    /*Legacy*/
     oneDimStringVec(arg) {
         //c,b,a
         let splitted = arg.split(',')
@@ -106,7 +437,14 @@ export const CommandArgParser = {
         }
         return arr
     },
+
     _isValidInt(arg) {
         return !isNaN(arg) && !isNaN(parseInt(arg))
+    },
+    _isValidPositiveInt(arg) {
+
+        if (!isNaN(arg) && !isNaN(parseInt(arg)))
+            return parseInt(arg) >= 0
+        return false
     }
 }

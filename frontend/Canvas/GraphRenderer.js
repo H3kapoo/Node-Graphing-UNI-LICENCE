@@ -5,6 +5,9 @@ export class GraphRenderer {
     ctx_ = undefined
     _width_ = undefined
     _height_ = undefined
+
+    _indexingFlag_ = false
+
     constructor(canvasDetails) {
         this.ctx_ = canvasDetails[0]
         this._width_ = canvasDetails[1]
@@ -12,14 +15,20 @@ export class GraphRenderer {
     }
 
     /*Public funcs*/
-    render(state) {
+    render(state, indexingFlag) {
         this.ctx_.clearRect(0, 0, this._width_, this._height_)
-        this.renderGrid()
+
+        if (indexingFlag)
+            this._renderGrid()
+
         this._renderConns(state)
         this._renderNodes(state)
+
+        if (indexingFlag)
+            this._indexingPass(state)
     }
 
-    renderGrid(spacing = 100) {
+    _renderGrid(spacing = 100) {
         for (let x = spacing; x < this._width_; x += spacing)
             for (let y = spacing; y < this._height_; y += spacing) {
                 let text = x.toString() + ',' + y.toString()
@@ -31,13 +40,11 @@ export class GraphRenderer {
 
         for (let x = 0; x < this._width_; x += spacing)
             utils.debugLine(this.ctx_, [x, 0], [x, this._height_])
-
     }
 
     /*Private funcs*/
     _renderConns(state) {
         for (const [_, connData] of Object.entries(state.conns)) {
-
             let srcPos = utils.getNodeData(state.nodes[connData['-id_src']], '-pos')
             let destPos = utils.getNodeData(state.nodes[connData['-id_dest']], '-pos')
             let srcRad = utils.getNodeData(state.nodes[connData['-id_src']], '-radius')
@@ -69,7 +76,6 @@ export class GraphRenderer {
             this.ctx_.moveTo(res.lineStart[0], res.lineStart[1])
             this.ctx_.quadraticCurveTo(res.cpPos[0], res.cpPos[1], res.lineEnd[0], res.lineEnd[1])
             this.ctx_.stroke()
-
         }
     }
 
@@ -87,16 +93,57 @@ export class GraphRenderer {
             this.ctx_.strokeStyle = 'black'
             this.ctx_.stroke()
 
-            //text over
-            this.ctx_.font = '2em Courier New'
-            // this.ctx_.fillStyle = "red";
-            this.ctx_.textAlign = "center"
-            this.ctx_.textBaseline = "middle"
-            this.ctx_.lineWidth = 2 //hardcoded
-            this.ctx_.fillText(id.toString(), pos[0], pos[1])
-            this.ctx_.strokeText(id.toString(), pos[0], pos[1])
+            /*indexing artifacts*/
+            if (this._indexingFlag_) {
+
+                this.ctx_.font = '2em Courier New'
+                this.ctx_.textAlign = "center"
+                this.ctx_.textBaseline = "middle"
+                this.ctx_.lineWidth = 2 //hardcoded
+                this.ctx_.fillText(id.toString(), pos[0], pos[1] - 1.5 * radius)
+                this.ctx_.strokeText(id.toString(), pos[0], pos[1] - 1.5 * radius)
+            }
         }
     }
 
+    _indexingPass(state) {
+        /*For conns*/
+        for (const [_, connData] of Object.entries(state.conns)) {
+            let connId = utils.getConnData(connData, '-conn_id')
+            let srcPos = utils.getNodeData(state.nodes[connData['-id_src']], '-pos')
+            let destPos = utils.getNodeData(state.nodes[connData['-id_dest']], '-pos')
+            let srcRad = utils.getNodeData(state.nodes[connData['-id_src']], '-radius')
+            let destRad = utils.getNodeData(state.nodes[connData['-id_dest']], '-radius')
+            let elev = utils.getConnData(connData, '-elev')
 
+            let res = utils.getBezierPointsWithCpElevationAndRadius(srcPos, destPos, srcRad, destRad, elev)
+            /*index artifacts*/
+            let elevBias = 25
+            let elevBiasPassed = elev >= 0 ? elevBias : -elevBias
+            let indexingPos = utils.getConnIndexingPointWithElev(res.lineStart, res.cpPos, res.lineEnd, elevBiasPassed)
+            this.ctx_.font = '2em Courier New'
+            this.ctx_.textAlign = "center"
+            this.ctx_.textBaseline = "middle"
+            this.ctx_.lineWidth = 2 //hardcoded
+            this.ctx_.fillText(connId.toString(), indexingPos[0], indexingPos[1])
+            this.ctx_.strokeText(connId.toString(), indexingPos[0], indexingPos[1])
+        }
+
+        /*For nodes*/
+        for (const [_, nodeData] of Object.entries(state.nodes)) {
+            let pos = utils.getNodeData(nodeData, '-pos')
+            let id = utils.getNodeData(nodeData, '-node_id')
+            let radius = utils.getNodeData(nodeData, '-radius')
+
+            /*indexing artifacts*/
+            let elevBias = 25
+            let upPoint = [pos[0], pos[1] - radius - elevBias]
+            this.ctx_.font = '2em Courier New'
+            this.ctx_.textAlign = "center"
+            this.ctx_.textBaseline = "middle"
+            this.ctx_.lineWidth = 2 //hardcoded
+            this.ctx_.fillText(id.toString(), upPoint[0], upPoint[1])
+            this.ctx_.strokeText(id.toString(), upPoint[0], upPoint[1])
+        }
+    }
 }

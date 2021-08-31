@@ -11,6 +11,7 @@ require('electron-reload')(process.cwd(), {
 
 /*Globals*/
 let mainWindow = null
+let indexingArtifactsEnabled = false
 const menu = new Menu()
 
 /*Electorn Events*/
@@ -22,18 +23,26 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() }) //Mac
 
 /*App Menu*/
-menu.append(new MenuItem({
-    label: 'Test',
+const debugMenu = new MenuItem({
+    label: 'Debug',
     submenu: [{
-        label: 'reload',
+        label: 'Refresh commands',
         accelerator: 'Alt+S',
-        click: () => { console.log(mainWindow.webContents.send('nodify-reload-cmds-short', {})) }
-    }, {
-        label: 'inspect',
+        click: () => { mainWindow.webContents.send('nodify-reload-cmds-short', {}) }
+    },
+    {
+        label: 'Toggle index artifacts',
+        accelerator: 'Ctrl+D',
+        click: () => { requestDebugArtifactsToggle() }
+    },
+    {
+        label: 'Debug console',
         accelerator: 'Ctrl+Shift+I',
         click: () => { mainWindow.webContents.openDevTools() }
     }]
-}))
+})
+
+menu.append(debugMenu)
 
 Menu.setApplicationMenu(menu)
 
@@ -42,7 +51,13 @@ ipcMain.on('nodify-reload-cmds', (evt, args) => {
     evt.returnValue = loadCommandFiles()
 })
 
+
 /*Helper Funcs*/
+function requestDebugArtifactsToggle() {
+    indexingArtifactsEnabled = !indexingArtifactsEnabled
+    mainWindow.webContents.send('nodify-indexing-artifacts-toggle', {})
+}
+
 function createWindow() {
     mainWindow = new BrowserWindow({
         width: 1920, height: 1080,

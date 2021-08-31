@@ -14,6 +14,7 @@ export const SupportedNodeOpts = {
 export const SupportedConnOpts = {
     "-color": { 'active': true, 'type': 'string' },
     "-id": { 'active': true, 'type': 'integer' },
+    "-conn_id": { 'active': true, 'type': 'integer' },
     "-id_src": { 'active': true, 'type': 'integer' },
     "-id_dest": { 'active': true, 'type': 'integer' },
     "-color": { 'active': true, 'type': 'string' },
