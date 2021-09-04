@@ -6,11 +6,15 @@
  * http://github.com/cferdinandi/tabby
  */
 
+ :root {
+  --main-dark: #15191E;
+}
+
 /**
  * The tablist
  */
 [role="tablist"] {
-  border-bottom: 1px solid lightgray;
+  border-bottom: 1px solid #11141b;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -52,8 +56,8 @@
 @media (min-width: 30em) {
   [role="tab"] {
     border-top-color: transparent;
-    border-top-left-radius: 0.5em;
-    border-top-right-radius: 0.5em;
+    border-top-left-radius: 0.0em;
+    border-top-right-radius: 0.0em;
     display: inline-block;
     margin-bottom: -1px;
   }
@@ -67,7 +71,7 @@
   [role="tab"][aria-selected="true"] {
     background-color: transparent;
     border: 1px solid lightgray;
-    border-bottom-color: #ffffff;
+    border-bottom-color:  var(--main-dark);
   }
 }
 
@@ -78,6 +82,7 @@
 @media (min-width: 30em) {
   [role="tab"]:hover:not([aria-selected="true"]) {
     border: 1px solid lightgray;
+    border-bottom-color:  var(--main-dark);
   }
 }
 
@@ -86,4 +91,21 @@
  */
 [hidden] {
   display: none;
+}
+
+#tabby-toggle_cli-cont{
+  color: #E0E2EB;
+  background-color:  var(--main-dark);
+  outline: none;
+}
+#tabby-toggle_cli-error{
+  color: #E0E2EB;
+  background-color:  var(--main-dark);
+  outline: none;
+}
+
+#tabby-toggle_canvas-cont{
+  color: #E0E2EB;
+  background-color:  var(--main-dark);
+  outline: none;
 }

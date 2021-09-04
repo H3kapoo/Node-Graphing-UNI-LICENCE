@@ -1,9 +1,22 @@
+@font-face {
+    font-family: "mainFont";
+    src: url("../Fonts/JetBrainsMono-Regular.ttf");
+}
+
 *{
+    font-family: "mainFont";
     padding: 0;
     margin: 0;
     box-sizing:border-box;
 }
+:root {
+    --main-dark: #15191E;
+  }
 
+*::-webkit-scrollbar {
+    width: 0em;
+  }
+   
 #appCont{
     
     position:fixed;
@@ -11,38 +24,35 @@
     flex-direction: row;
     width: 100%;
     height: 100%;
-    background:rgba(255,255,255,0.1);
+    background: var(--main-dark);
 }
 
 #spann{
     color:red;
 }
+
 #canvas-cont{
     width: 100%;
     height: calc(100% - 36px); /*because of tabs height*/
     overflow: auto;
     /* background-color: rgb(75, 75, 75); */
-    background-color: rgb(255, 255, 255);
+    background-color: #E0E2EB;
 
 }
 #canvas{
     overflow-x: auto;
     display: block;
     /* background-color: rgb(212, 90, 90); */
-
 }
 
 
 #cli-cont{
     width: 100%;
     height: 100%;   
-    padding: 10px;
+    padding-top: 5px;
+    background-color: var(--main-dark);
 }
 
-
-#cli-textarea:focus{
-    outline: none;
-}
 #cli-textarea2{
     white-space: pre;
     font-size: 14px;
@@ -59,13 +69,11 @@
     padding: 5px;
 }
 
-#error{
-    width: 100%;
-}
-
-.highLite,.highLite_err{
+.highLite{
     width: 100%;
     height: 100%;
+    /* display: flex;    
+    flex-direction: row; */
     position: relative;
     /* white-space: nowrap; */
     /* overflow-x: auto;
@@ -80,7 +88,7 @@
   }
   
   /* THE UNDERLAYING ONE WITH COLORS */
-.highLite_colors,.highLite_colors_err {
+.highLite_colors {
     position: absolute;
     top: 0;
     right: 0;
@@ -89,22 +97,20 @@
     user-select: none;
   }
 
-  .highLite_colors_err{
-      padding-top: 20px;
-  }
+.highLite_colors_err{
+    padding-top: 20px;
+}
   
   /* THE OVERLAYING CONTENTEDITABLE WITH TRANSPARENT TEXT */
-.highLite > div:nth-child(2) {
+  highLite_editable {
     position: relative;
     -webkit-text-fill-color: transparent; /* Chrome: make text transparent */
-    /* text-fill-color: transparent;         One day, hopefully? */
+    /* text-fill-color: trasparent;         One day, hopefully? */
     color: black;                         /* But keep caret black */
   }
 
 .hl_angled{ color: turquoise; }
 .hl_curly{ color: fuchsia; }
-
-
 
 .highlight {
     background-color: yellow;
@@ -126,38 +132,78 @@
     cursor:row-resize;
 }
 
-.error_tab_tag,.cli_tab_tag{
-    color: white;
-    font-size: 0.9rem;
-    font-family:Arial, Helvetica, sans-serif;
-    font-weight: 100;
-    background-color: rgb(128, 128, 128);
-    padding-bottom: 5px;
-    text-align: center;
-}
 .cli_tab_tag{
+    outline: none;
     padding-top: 5px;
-
+}
+#cmd-prepender{
+    padding-left: 5px;
 }
 
 #cmd-text{
     word-break: break-all;
-    /* overflow-wrap: break-word; */
     white-space: pre-wrap;
 }
+#cmd-info-text-prep{
+    padding-right: 5px;
+    color: #A8ED2E;
+}
 
-.highLite_editable { 
+#cmd-err-text-prep{
+    padding-right: 5px;
+    color: #ED572E;
+}
+#cmd-info-text{
+    word-break: break-all;
+    white-space: pre-wrap;
+    color: #E0E2EB;
+}
+#cmd-err-text{
+    word-break: break-all;
+    white-space: pre-wrap;
+    color: #E0E2EB;
+}
+
+#cmd-text-number{
+    word-break: break-all;
+    white-space: pre-wrap;
+    color: #2EB2ED;
+}
+
+
+/* .highLite_colors {
+    width: 100%;
+    height: 100%;
+    outline: none; 
+    padding-top: 5px;
     word-wrap: break-word;
     white-space: pre-wrap;
     word-break: break-word;
+    color:#E0E2EB;
+} */
 
-   color:chocolate;
+.highLite_editable { 
+    padding-left: 5px;
+    align-items: center;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: #E0E2EB;
 }
 
-.highLite_editable::before{
+/* .highLite_editable::before{
+    content: "CLI >";
+    padding-left: 3px;
+    padding-right: 10px;
+    background-color: #5F9B6D;
+    border-radius: 0px;
+} */
+
+
+/* .highLite_editable::before{
     content: "CLI>";
     padding-left: 3px;
     padding-right: 10px;
     background-color: turquoise;
     border-radius: 10px;
-}
+} */

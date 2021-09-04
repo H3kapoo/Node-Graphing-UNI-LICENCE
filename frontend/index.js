@@ -5,6 +5,7 @@ import "./Styles/tabby.css";
 /*External Imports*/
 import Tabby from 'tabbyjs'
 import Split from 'split.js'
+import ScrollBooster from 'scrollbooster';
 
 /*Internal Imports*/
 import { CLITabManager } from './Tabs/CLITabManager';
@@ -20,6 +21,12 @@ const graphManager_ = new GraphManager(canvasManager_, cliTabManager_)
 
 /*Split into 2 parts (cli and canvas)*/
 Split(['#left-side', '#right-side'], { sizes: [65, 35] })
+
+/*Scrolling with drag inside canvas*/
+new ScrollBooster({
+    viewport: document.querySelector('#canvas-cont'),
+    scrollMode: 'native'
+});
 
 /*Create tabs area*/
 new Tabby('[data-tabs-left]');

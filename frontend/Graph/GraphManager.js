@@ -1,8 +1,8 @@
 /*Internal imports*/
-import { StateManager } from "../Canvas/StateManager"
+import { StateManager } from "./StateManager"
 import { CommandParser } from "../Parser/CommandParser"
 import { CommandProcessor } from "../Processor/CommandProcessor"
-import { GraphRenderer } from "../Canvas/GraphRenderer"
+import { GraphRenderer } from "./GraphRenderer"
 
 export class GraphManager {
     _canvasManager_ = undefined
@@ -13,12 +13,15 @@ export class GraphManager {
     graphState_ = new StateManager()
     graphRenderer_ = undefined
 
-    _indexingFlag_ = false
+    _indexingFlag_ = true //always show indexing at startup 
 
     constructor(canvasManager, cliManager) {
         this._canvasManager_ = canvasManager
         this._cliManager_ = cliManager
         this.graphRenderer_ = new GraphRenderer(this._canvasManager_.getCanvasDetails())
+
+        /*Show grid at start*/
+        this.graphRenderer_.render(this.graphState_.getState(), this._indexingFlag_)
 
         /*Backend comms*/
         window.api.receive('nodify-indexing-artifacts-toggle', (evt, args) => {
@@ -29,17 +32,18 @@ export class GraphManager {
 
     /*Public funcs*/
     compute(evt) {
+
         if (evt.which !== 13) return
 
-        /*0. Support for command chaining (&) */
-        let splittedChain = this._cliManager_.getCLIObject().textContent.split('&')
+        /*0. Output to CLI the cmd inputted by user */
+        this._cliManager_.outputGiven(this._cliManager_.commandText_)
+
+        /*1. Support for command chaining (&) */
+        let splittedChain = this._cliManager_.commandText_.split('&')
 
         for (let commandText of splittedChain) {
-            /*1. Parse into data tokens */
+            /*2. Parse into data tokens */
             let parsedResult = this._commandParser_.parse(commandText)
-
-            /*2. Clear cli text after parse */
-            this._cliManager_.clearAfterDoneWithText()
 
             /*3. Catch any errors thrown by parsing stage */
             if (parsedResult.hasError)

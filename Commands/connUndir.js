@@ -10,7 +10,7 @@ data = {
         connUndir(parsedData, state) {
             let ids = this.get(parsedData, '-id')
             let elev = this.get(parsedData, '-elev')
-            console.log(elev)
+
             for (let i = 0; i < ids.length; i++) {
                 let data = {}
                 data['-id_src'] = this.set(ids[i][0])

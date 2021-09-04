@@ -1,3 +1,4 @@
+
 /*Module Imports*/
 const { app, BrowserWindow, ipcMain } = require('electron')
 const { Menu, MenuItem } = require('electron')
@@ -45,7 +46,6 @@ const debugMenu = new MenuItem({
 menu.append(debugMenu)
 
 Menu.setApplicationMenu(menu)
-
 /*IPC Events*/
 ipcMain.on('nodify-reload-cmds', (evt, args) => {
     evt.returnValue = loadCommandFiles()
@@ -62,8 +62,9 @@ function createWindow() {
     mainWindow = new BrowserWindow({
         width: 1920, height: 1080,
         minWidth: 1280, minHeight: 720,
+        // frame: false,
         webPreferences: {
-            preload: path.join(__dirname, '../preload.js')
+            preload: path.join(__dirname, '../preload.js'),
         }
     })
     mainWindow.loadFile('dist/index.html')

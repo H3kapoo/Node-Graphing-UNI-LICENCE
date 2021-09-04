@@ -50,8 +50,7 @@ export class CommandParser {
             if (!CommandArgParser[CommandsSchemas[cmdArgs[0]][opt]]) {
                 return {
                     "hasError": true,
-                    "msg": "There is no argument schema to parse this argument,\
-                            check for misspelling in the command schema."
+                    "msg": "There is no argument schema to parse this argument,check for misspelling in the command schema."
                 }
             }
 

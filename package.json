@@ -35,8 +35,12 @@
     "electron-builder": "^22.11.7"
   },
   "dependencies": {
+    "@treverix/custom-electron-titlebar": "^4.1.7",
+    "custom-electron-titlebar": "^3.2.7",
     "electron-reload": "^1.5.0",
     "electron-squirrel-startup": "^1.0.0",
+    "sanitize-html": "^2.4.0",
+    "scrollbooster": "^3.0.2",
     "split.js": "^1.6.4",
     "tabbyjs": "^12.0.3"
   },

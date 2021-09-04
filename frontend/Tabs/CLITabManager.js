@@ -1,21 +1,31 @@
 /*Class handling command CLI style and behaviour*/
 export class CLITabManager {
     _CLIObject_ = undefined
+    commandText_ = undefined
     _cmdHistoryArray_ = [""]
     _cmdHistoryOffset_ = 0
+    _cliIntro_ = "#hekapoo$> " //TODO: fetch this from preferences or something,make it custom
 
     constructor(cliID) {
         this._CLIObject_ = document.getElementById(cliID)
         this._listenersSetup()
+        this._CLIObject_.innerText = this._cliIntro_
+        this._setCaret(this._cliIntro_.length, this._CLIObject_)
     }
 
     /*Public funcs*/
-    //TODO: Diff between normal std and err output
     outputStd(foundInContext, msg) {
         let outputDiv = document.createElement("div")
 
+        let intro = `<span id='cmd-info-text-prep'>${foundInContext}</span>`
+
+        let sanitized = this._sanitize(msg)
+        let content = sanitized.replace(/[0-9]+/g, (match) => {
+            return `<span id='cmd-text-number'>${match}</span>`
+        })
+
         outputDiv.id = "cmd-info-text"
-        outputDiv.innerText = foundInContext + " " + msg
+        outputDiv.innerHTML = intro + content
 
         document.getElementById("cmd-prepender").appendChild(outputDiv)
     }
@@ -23,18 +33,33 @@ export class CLITabManager {
     outputErr(foundInContext, msg) {
         let outputDiv = document.createElement("div")
 
+        let intro = `<span id='cmd-err-text-prep'>${foundInContext}</span>`
+        let sanitized = this._sanitize(msg)
+
+        let content = sanitized.replace(/[0-9]+/g, (match) => {
+            return `<span id='cmd-text-number'>${match}</span>`
+        })
+
         outputDiv.id = "cmd-err-text"
-        outputDiv.innerText = foundInContext + " " + msg
+        outputDiv.innerHTML = intro + content
 
         document.getElementById("cmd-prepender").appendChild(outputDiv)
     }
 
-    clearAfterDoneWithText() {
-        this._cmdHistoryOffset_ = 0
-        this._cmdHistoryArray_.push(this._CLIObject_.textContent);
-        this._CLIObject_.textContent = ""
-        this._setEndOfContenteditable(this._CLIObject_)
-        this._focusListener(this._CLIObject_)
+    outputGiven(msg) {
+        let outputDiv = document.createElement("div")
+
+        let intro = `<span id='cmd-err-info-prep'>${this._cliIntro_}</span>`
+        let sanitized = this._sanitize(msg)
+
+        let content = sanitized.replace(/[0-9]+/g, (match) => {
+            return `<span id='cmd-text-number'>${match}</span>`
+        })
+
+        outputDiv.id = "cmd-info-text"
+        outputDiv.innerHTML = intro + content
+
+        document.getElementById("cmd-prepender").appendChild(outputDiv)
     }
 
     /*Private funcs*/
@@ -42,7 +67,6 @@ export class CLITabManager {
         this._CLIObject_.addEventListener('paste', e => this._pasteListener(e))
         this._CLIObject_.addEventListener('keydown', e => this._keyDownListener(e))
         //this needs refactor,history has a bug messed up right now
-        //also cursor going behind ::before needs to be fixed
         this._CLIObject_.addEventListener('keyup', e => this._keyUpListener(e))
         this._CLIObject_.addEventListener('input', e => this._inputListener())
         this._CLIObject_.addEventListener('focus', e => this._focusListener())
@@ -50,19 +74,37 @@ export class CLITabManager {
 
     _pasteListener(e) {
         e.preventDefault()
-        let text = " " + e.clipboardData.getData("text/plain")
+        let text = '' + e.clipboardData.getData("text/plain").replace(this._cliIntro_, '')
         document.execCommand("insertText", false, text)
     }
 
     _keyDownListener(e) {
+
+        this._keepCaretAwayFromCLIIntro(e, this._cliIntro_, this._CLIObject_)
+
         if (!e)
             e = window.event;
 
-        if (e.preventDefault && e.which === 13)
+        /*handle text sent when enter key*/
+        if (e.preventDefault && e.which === 13) {
+            this.commandText_ = undefined
+            this._setEndOfContenteditable(this._CLIObject_)
             e.preventDefault();
+        }
     }
 
     _keyUpListener(e) {
+
+        this._keepCaretAwayFromCLIIntro(e, this._cliIntro_, this._CLIObject_)
+
+        /*handle text sent when enter key*/
+        if (e.which === 13) {
+            if (this.commandText_ === undefined)
+                this.commandText_ = this._CLIObject_.innerText.replace(this._cliIntro_, '')
+            this._CLIObject_.innerText = this._cliIntro_
+            this._setEndOfContenteditable(this._CLIObject_)
+        }
+
         /*handle history up*/
         if (e.which === 38) {
             if (this._cmdHistoryOffset_ + 1 <= this._cmdHistoryArray_.length)
@@ -70,7 +112,7 @@ export class CLITabManager {
 
             let index = this._cmdHistoryArray_.length - this._cmdHistoryOffset_
 
-            this._CLIObject_.textContent = " "
+            this._CLIObject_.innerText = this._cliIntro_
             this._CLIObject_.textContent += this._cmdHistoryArray_[index].replace(/\s{2,1000}/g, '')
             this._setEndOfContenteditable(this._CLIObject_)
             this._focusListener(this._CLIObject_)
@@ -83,7 +125,8 @@ export class CLITabManager {
 
             let index = this._cmdHistoryArray_.length - this._cmdHistoryOffset_
 
-            this._CLIObject_.textContent = " "
+            this._CLIObject_.innerText = this._cliIntro_
+
             this._CLIObject_.textContent += this._cmdHistoryArray_[index].replace(/\s{2,1000}/g, '')
             this._setEndOfContenteditable(this._CLIObject_)
             this._focusListener(this._CLIObject_)
@@ -91,14 +134,16 @@ export class CLITabManager {
     }
 
     _inputListener(e) {
+
         this._cmdHistoryOffset_ = 0
+        // this._CLIObjectColor_.innerText = this._CLIObject_.innerText
     }
 
     _focusListener() {
-        if (!this._CLIObject_.textContent.length) {
-            this._CLIObject_.textContent = " "
-            this._setEndOfContenteditable(this._CLIObject_)
-        }
+        // if (!this._CLIObject_.textContent.length) {
+        //     this._CLIObject_.innerText = this._cliIntro_
+        //     this._setEndOfContenteditable(this._CLIObject_)
+        // }
     }
 
     /*Getter*/
@@ -107,6 +152,62 @@ export class CLITabManager {
     }
 
     /* Utility */
+
+    _keepCaretAwayFromCLIIntro(evt, CLIIntro, CLIObject) {
+
+        if (CLIObject.innerText.length < CLIIntro.length)
+            CLIObject.innerText = CLIIntro
+
+        /*prevent backspace bug*/
+        if (this._getCaretCharacterOffsetWithin(CLIObject) <= CLIIntro.length) {
+            if (evt.which === 8) {
+                evt.preventDefault()
+            }
+        }
+
+        if (this._getCaretCharacterOffsetWithin(CLIObject) < CLIIntro.length)
+            this._setCaret(CLIIntro.length, CLIObject)
+
+    }
+
+    _getCaretCharacterOffsetWithin(element) {
+        var caretOffset = 0;
+        var doc = element.ownerDocument || element.document;
+        var win = doc.defaultView || doc.parentWindow;
+        var sel;
+        if (typeof win.getSelection != "undefined") {
+            sel = win.getSelection();
+            if (sel.rangeCount > 0) {
+                var range = win.getSelection().getRangeAt(0);
+                var preCaretRange = range.cloneRange();
+                preCaretRange.selectNodeContents(element);
+                preCaretRange.setEnd(range.endContainer, range.endOffset);
+                caretOffset = preCaretRange.toString().length;
+            }
+        } else if ((sel = doc.selection) && sel.type != "Control") {
+            var textRange = sel.createRange();
+            var preCaretTextRange = doc.body.createTextRange();
+            preCaretTextRange.moveToElementText(element);
+            preCaretTextRange.setEndPoint("EndToEnd", textRange);
+            caretOffset = preCaretTextRange.text.length;
+        }
+        return caretOffset;
+    }
+
+    _setCaret(pos, CLIObject) {
+        {
+            var range = document.createRange()
+            var sel = window.getSelection()
+
+            range.setStart(CLIObject.childNodes[0], pos)
+            range.collapse(true)
+
+            sel.removeAllRanges()
+            sel.addRange(range)
+        }
+    }
+
+
     _setEndOfContenteditable(contentEditableElement) {
         let range, selection;
         if (document.createRange) {
@@ -117,5 +218,14 @@ export class CLITabManager {
             selection.removeAllRanges()
             selection.addRange(range)
         }
+    }
+
+    _sanitize(string) {
+        return string
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+        // .replace(/"/g, "&quot;")
+        // .replace(/'/g, "&#039;");
     }
 }
