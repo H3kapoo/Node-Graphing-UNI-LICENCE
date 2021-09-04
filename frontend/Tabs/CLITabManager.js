@@ -2,7 +2,8 @@
 export class CLITabManager {
     _CLIObject_ = undefined
     commandText_ = undefined
-    _cmdHistoryArray_ = [""]
+    _cmdHistoryArray_ = []
+    _cmdHistoryArraySize_ = 0
     _cmdHistoryOffset_ = 0
     _cliIntro_ = "#hekapoo$> " //TODO: fetch this from preferences or something,make it custom
 
@@ -99,43 +100,42 @@ export class CLITabManager {
 
         /*handle text sent when enter key*/
         if (e.which === 13) {
-            if (this.commandText_ === undefined)
+            if (this.commandText_ === undefined) {
                 this.commandText_ = this._CLIObject_.innerText.replace(this._cliIntro_, '')
+            }
             this._CLIObject_.innerText = this._cliIntro_
             this._setEndOfContenteditable(this._CLIObject_)
+
+            /*History*/
+            this._cmdHistoryArray_.push(this.commandText_)
+            this._cmdHistoryOffset_ = this._cmdHistoryArray_.length
+
         }
 
         /*handle history up*/
         if (e.which === 38) {
-            if (this._cmdHistoryOffset_ + 1 <= this._cmdHistoryArray_.length)
-                this._cmdHistoryOffset_ += 1
 
-            let index = this._cmdHistoryArray_.length - this._cmdHistoryOffset_
+            if (this._cmdHistoryOffset_ <= 0) return
+            this._CLIObject_.innerText = this._cliIntro_ + this._cmdHistoryArray_[this._cmdHistoryOffset_ - 1]
+            this._cmdHistoryOffset_ -= 1
 
-            this._CLIObject_.innerText = this._cliIntro_
-            this._CLIObject_.textContent += this._cmdHistoryArray_[index].replace(/\s{2,1000}/g, '')
             this._setEndOfContenteditable(this._CLIObject_)
             this._focusListener(this._CLIObject_)
         }
         /*handle history down*/
         else if (e.which === 40) {
 
-            if (this._cmdHistoryOffset_ - 1 > 0)
-                this._cmdHistoryOffset_ -= 1
+            if (this._cmdHistoryOffset_ >= this._cmdHistoryArray_.length) return
+            this._cmdHistoryOffset_ += 1
+            this._CLIObject_.innerText = this._cliIntro_ + this._cmdHistoryArray_[this._cmdHistoryOffset_ - 1]
 
-            let index = this._cmdHistoryArray_.length - this._cmdHistoryOffset_
-
-            this._CLIObject_.innerText = this._cliIntro_
-
-            this._CLIObject_.textContent += this._cmdHistoryArray_[index].replace(/\s{2,1000}/g, '')
             this._setEndOfContenteditable(this._CLIObject_)
             this._focusListener(this._CLIObject_)
         }
     }
 
     _inputListener(e) {
-
-        this._cmdHistoryOffset_ = 0
+        // this._cmdHistoryOffset_ = 0
         // this._CLIObjectColor_.innerText = this._CLIObject_.innerText
     }
 
