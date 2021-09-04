@@ -2,6 +2,7 @@ const htmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const path = require('path')
 const webpack = require("webpack");
+// const nodeExternals = require('webpack-node-externals')
 
 
 module.exports = {
@@ -35,5 +36,7 @@ module.exports = {
             filename: "./index.html"
         }),
         new CleanWebpackPlugin()
-    ]
+    ],
+    // externals: [nodeExternals(), 'react', 'electron'],
+
 }

@@ -4,6 +4,7 @@ const { app, BrowserWindow, ipcMain } = require('electron')
 const { Menu, MenuItem } = require('electron')
 const path = require('path')
 const fs = require('fs')
+const { dialog } = require('electron')
 
 /*Reload process*/
 require('electron-reload')(process.cwd(), {
@@ -32,6 +33,11 @@ const debugMenu = new MenuItem({
         click: () => { mainWindow.webContents.send('nodify-reload-cmds-short', {}) }
     },
     {
+        label: 'Save image',
+        accelerator: 'Ctrl+S',
+        click: () => { mainWindow.webContents.send('nodify-export-image', {}) }
+    },
+    {
         label: 'Toggle index artifacts',
         accelerator: 'Ctrl+D',
         click: () => { requestDebugArtifactsToggle() }
@@ -44,11 +50,25 @@ const debugMenu = new MenuItem({
 })
 
 menu.append(debugMenu)
-
 Menu.setApplicationMenu(menu)
+
 /*IPC Events*/
 ipcMain.on('nodify-reload-cmds', (evt, args) => {
     evt.returnValue = loadCommandFiles()
+})
+
+ipcMain.on('nodify-export-image', (evt, data) => {
+
+    let saveExt = '.png'
+
+    dialog.showSaveDialog({}).then((result) => {
+        let path = result.filePath.replace(saveExt, '') + saveExt
+        fs.writeFile(path, data.base64Data, 'base64', (err) => {
+            console.log(err)
+        });
+    }).catch((err) => {
+        console.log(err)
+    });
 })
 
 

@@ -18,7 +18,7 @@ export class GraphManager {
     constructor(canvasManager, cliManager) {
         this._canvasManager_ = canvasManager
         this._cliManager_ = cliManager
-        this.graphRenderer_ = new GraphRenderer(this._canvasManager_.getCanvasDetails())
+        this.graphRenderer_ = new GraphRenderer(this._canvasManager_.getCanvas())
 
         /*Show grid at start*/
         this.graphRenderer_.render(this.graphState_.getState(), this._indexingFlag_)

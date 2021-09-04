@@ -9,14 +9,17 @@ export class GraphRenderer {
     _indexingFlag_ = false
 
     constructor(canvasDetails) {
-        this.ctx_ = canvasDetails[0]
-        this._width_ = canvasDetails[1]
-        this._height_ = canvasDetails[2]
+        this.ctx_ = canvasDetails.getContext('2d')
+        this._width_ = canvasDetails.width
+        this._height_ = canvasDetails.height
     }
 
     /*Public funcs*/
     render(state, indexingFlag) {
-        this.ctx_.clearRect(0, 0, this._width_, this._height_)
+        // this.ctx_.clearRect(0, 0, this._width_, this._height_)
+        this.ctx_.fillStyle = 'white'
+        this.ctx_.rect(0, 0, this._width_, this._height_);
+        this.ctx_.fill();
 
         if (indexingFlag)
             this._renderGrid()

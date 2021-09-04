@@ -1,3 +1,4 @@
+
 /*Class handling command CLI style and behaviour*/
 export class CLITabManager {
     _CLIObject_ = undefined
@@ -51,14 +52,9 @@ export class CLITabManager {
         let outputDiv = document.createElement("div")
 
         let intro = `<span id='cmd-err-info-prep'>${this._cliIntro_}</span>`
-        let sanitized = this._sanitize(msg)
-
-        let content = sanitized.replace(/[0-9]+/g, (match) => {
-            return `<span id='cmd-text-number'>${match}</span>`
-        })
 
         outputDiv.id = "cmd-info-text"
-        outputDiv.innerHTML = intro + content
+        outputDiv.innerHTML = intro + this._sanitize(msg)
 
         document.getElementById("cmd-prepender").appendChild(outputDiv)
     }
