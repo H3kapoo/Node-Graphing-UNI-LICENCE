@@ -44,20 +44,18 @@ refreshCommands()
 /*Commands loader*/
 function refreshCommands() {
     /*Dont remove always*/
-    let getFunc = CommandsLogic.get
-    let setFunc = CommandsLogic.set
+    let callFunc = CommandsLogic.call
 
     CommandsSchemas = {}
     CommandsLogic = {}
-    CommandsLogic['get'] = getFunc
-    CommandsLogic['set'] = setFunc
+    CommandsLogic['call'] = callFunc
 
     let filePaths = window.api.send('nodify-reload-cmds', {})
 
     for (let file of filePaths)
         loadScript(file, () => {
             CommandsSchemas[data.schema.name] = data.schema
-            CommandsLogic[data.logic.name] = data.logic[data.logic.name]
+            CommandsLogic[data.schema.name] = data.logic
             unloadScript('cmd-script')
         });
     console.log('[Index.js] Loaded ', filePaths.length, ' commands!')

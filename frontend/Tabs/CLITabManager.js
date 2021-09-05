@@ -17,6 +17,7 @@ export class CLITabManager {
 
     /*Public funcs*/
     outputStd(foundInContext, msg) {
+
         let outputDiv = document.createElement("div")
 
         let intro = `<span id='cmd-info-text-prep'>${foundInContext}</span>`
@@ -33,6 +34,7 @@ export class CLITabManager {
     }
 
     outputErr(foundInContext, msg) {
+
         let outputDiv = document.createElement("div")
 
         let intro = `<span id='cmd-err-text-prep'>${foundInContext}</span>`
@@ -49,6 +51,7 @@ export class CLITabManager {
     }
 
     outputGiven(msg) {
+
         let outputDiv = document.createElement("div")
 
         let intro = `<span id='cmd-err-info-prep'>${this._cliIntro_}</span>`

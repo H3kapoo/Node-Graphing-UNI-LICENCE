@@ -35,32 +35,35 @@ export class GraphManager {
 
         if (evt.which !== 13) return
 
-        /*0. Output to CLI the cmd inputted by user */
+        /* Output to CLI the cmd inputted by user */
         this._cliManager_.outputGiven(this._cliManager_.commandText_)
 
-        /*1. Support for command chaining (&) */
+        /* Support for command chaining (&) */
         let splittedChain = this._cliManager_.commandText_.split('&')
 
-        for (let commandText of splittedChain) {
-            /*2. Parse into data tokens */
-            let parsedResult = this._commandParser_.parse(commandText)
+        try {
 
-            /*3. Catch any errors thrown by parsing stage */
-            if (parsedResult.hasError)
-                return this._cliManager_.outputErr('[Parse]', parsedResult.msg)
+            for (let commandText of splittedChain) {
+                /* Parse into data tokens */
+                let parsedResult = this._commandParser_.parse(commandText)
 
-            /*4. If parsed data is ok,process command on current state schema */
-            let processedResult = this._commandProcessor_.process(this.graphState_, parsedResult)
+                /* If parsed data is ok,process command on current state schema */
+                let processedResult = this._commandProcessor_.process(this.graphState_, parsedResult)
 
-            /*5. Catch any errors thrown by process stage */
-            if (processedResult.hasError)
-                return this._cliManager_.outputErr('[Process]', processedResult.msg)
+                /* Do the rendering with updates applied */
+                this.graphRenderer_.render(this.graphState_.getState(), this._indexingFlag_)
 
-            /*6. Do the rendering with updates applied */
-            this.graphRenderer_.render(this.graphState_.getState(), this._indexingFlag_)
+                /* Output to CLI the cmd output */
+                this._cliManager_.outputStd('[GraphInfo]', processedResult.msg)
+            }
+        } catch (err) {
+            /* Special handle when the line is empty*/
+            if (err.emptyLine)
+                return this._cliManager_.outputStd(err.stage, err.msg)
 
-            /*7. Output to CLI the cmd output */
-            this._cliManager_.outputStd('[GraphInfo]', processedResult.msg)
+            /* Catch errors thrown by parsing or process stage*/
+            console.log(err.stage)
+            this._cliManager_.outputErr(err.stage, err.msg)
         }
     }
 

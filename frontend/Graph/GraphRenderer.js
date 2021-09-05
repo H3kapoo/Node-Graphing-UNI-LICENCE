@@ -16,7 +16,6 @@ export class GraphRenderer {
 
     /*Public funcs*/
     render(state, indexingFlag) {
-        // this.ctx_.clearRect(0, 0, this._width_, this._height_)
         this.ctx_.fillStyle = 'white'
         this.ctx_.rect(0, 0, this._width_, this._height_);
         this.ctx_.fill();
@@ -24,7 +23,7 @@ export class GraphRenderer {
         if (indexingFlag)
             this._renderGrid()
 
-        this._renderConns(state)
+        // this._renderConns(state)
         this._renderNodes(state)
 
         if (indexingFlag)
@@ -85,9 +84,9 @@ export class GraphRenderer {
     _renderNodes(state) {
 
         for (const [_, nodeData] of Object.entries(state.nodes)) {
-            let pos = utils.getNodeData(nodeData, '-pos')
-            let id = utils.getNodeData(nodeData, '-node_id')
-            let radius = utils.getNodeData(nodeData, '-radius')
+            let pos = utils.getNodeData(nodeData, 'pos')
+            let id = utils.getNodeData(nodeData, 'node_id')
+            let radius = utils.getNodeData(nodeData, 'radius')
 
             //node itself
             this.ctx_.beginPath()
@@ -134,9 +133,9 @@ export class GraphRenderer {
 
         /*For nodes*/
         for (const [_, nodeData] of Object.entries(state.nodes)) {
-            let pos = utils.getNodeData(nodeData, '-pos')
-            let id = utils.getNodeData(nodeData, '-node_id')
-            let radius = utils.getNodeData(nodeData, '-radius')
+            let pos = utils.getNodeData(nodeData, 'pos')
+            let id = utils.getNodeData(nodeData, 'node_id')
+            let radius = utils.getNodeData(nodeData, 'radius')
 
             /*indexing artifacts*/
             let elevBias = 25

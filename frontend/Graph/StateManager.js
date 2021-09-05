@@ -26,19 +26,15 @@ export class StateManager {
         /* 1. Here we verify all its ok for opts */
         /* 2. Assign the 'to be created' node an unique ID */
         /* 3. Push it to the queue */
-        let verif = this._validateUserProcessed('node', opts)
-
-        if (verif.hasError) return verif
+        this._validateUserProcessed('node', opts)
 
         /* AFTER ALL VERIFICATION,GIVE NODE AN UNIQUE ID FROM POOL */
         /* this option can be only assigned internally */
-        let nId = this._getNextId('node')
-        opts['-node_id'] = nId
+        const nId = this._getNextId('node')
+        opts.node_id = nId
 
         /*Push to processing queue */
         this._actionsQueue_.push({ 'type': 'createNode', 'opts': opts })
-
-        return { 'hasError': false, 'msg': `Created Node with ID: ${nId}` }
     }
 
     pushUpdateNode(opts) {
@@ -49,27 +45,34 @@ export class StateManager {
 
         let verif = this._validateUserProcessed('node', opts)
 
-        if (verif.hasError) return verif
+        if (verif.msg)
+            throw verif
 
         let node = this._state_.nodes[opts['-id']]
 
         if (node === undefined) {
-            return {
-                'hasError': true,
+            throw {
                 'msg': `Node Id: ${opts['-id']} has not been found!`
             }
         }
 
         /* Nodes have a node_id internally, discard the passed '-id' */
         /* In order to avoid duplication of same information */
-
         delete opts['-id']
-        for (const [opt, arg] of Object.entries(opts))
+
+        /*calculate what ACTUALLY changed and pass that to push + apply to normal node*/
+        let diff = { '-node_id': node['-node_id'] }
+        for (const [opt, arg] of Object.entries(opts)) {
+            if (!node[opt])
+                diff[opt] = arg
+            else {
+                if (node[opt] !== arg)
+                    diff[opt] = arg
+            }
             node[opt] = arg
+        }
 
-        this._actionsQueue_.push({ 'type': 'updateNode', 'opts': node })
-
-        return { 'hasError': false, 'msg': `Updated Node with ID: ${node['-node_id']}` }
+        this._actionsQueue_.push({ 'type': 'updateNode', 'opts': node, 'param': diff })
     }
 
     pushDeleteNode(node_id) {
@@ -79,8 +82,7 @@ export class StateManager {
         let node = this._state_.nodes[node_id]
 
         if (node === undefined) {
-            return {
-                'hasError': true,
+            throw {
                 'msg': `Can't delete non-existent node Id: ${node_id}`
             }
         }
@@ -88,13 +90,10 @@ export class StateManager {
         /* Find conns referenced by node and delete them */
         for (let i = 0; i < node['-conn_refs'].length; i++) {
             let connId = node['-conn_refs'][i]
-            let stateResult = this.pushDeleteConn(connId)
-            if (stateResult.hasError) stateResult.msg
+            this.pushDeleteConn(connId) //TODO: not sure if here needs to be a try/catch,see later
         }
 
         this._actionsQueue_.push({ 'type': 'deleteNode', 'opts': node_id })
-
-        return { 'hasError': false, 'msg': `Deleted Node with ID: ${node_Id}` }
     }
 
     pushCreateConn(opts) {
@@ -137,7 +136,8 @@ export class StateManager {
         /* Push to processing queue */
         this._actionsQueue_.push({ 'type': 'createConn', 'opts': opts })
 
-        return { 'hasError': false, 'msg': `Created Conn with ID: ${cId}` }
+        return { 'hasError': false }
+
     }
 
     pushUpdateConn(opts) {
@@ -169,7 +169,8 @@ export class StateManager {
 
         this._actionsQueue_.push({ 'type': 'updateConn', 'opts': conn })
 
-        return { 'hasError': false, 'msg': `Updated Conn with ID: ${conn['-conn_id']}` }
+        return { 'hasError': false }
+
     }
 
     pushDeleteConn(conn_id) {
@@ -188,7 +189,8 @@ export class StateManager {
 
         this._actionsQueue_.push({ 'type': 'deleteConn', 'opts': conn_id })
 
-        return { 'hasError': false, 'msg': `Deleted Conn with ID: ${connId}` }
+        return { 'hasError': false }
+
     }
 
     executePushed() {
@@ -196,7 +198,7 @@ export class StateManager {
             switch (act.type) {
                 case 'createNode':
                 case 'updateNode':
-                    this._state_.nodes[act.opts['-node_id']] = act.opts
+                    this._state_.nodes[act.opts.node_id] = act.opts
                     break
                 case 'deleteNode':
                     delete this._state_.nodes[act.opts]
@@ -210,7 +212,6 @@ export class StateManager {
                     break
             }
         }
-
         let qActs = this._actionsQueue_
         this._actionsQueue_ = []
         return { 'msg': qActs }
@@ -221,9 +222,8 @@ export class StateManager {
 
         delete opts['cmdName']
 
-        /*Delete KEEP_UNCHANGED marked opts, those opts wont affect the graph info*/
         for (const [opt, arg] of Object.entries(opts)) {
-            if (arg === "KEEP_UNCHANGED")
+            if (arg === undefined)
                 delete opts[opt]
         }
 
@@ -232,8 +232,8 @@ export class StateManager {
                 let optSupported = SupportedNodeOpts[opt] ? SupportedNodeOpts[opt].active : false
 
                 if (!optSupported) {
-                    return {
-                        'hasError': true,
+                    throw {
+                        'stage': '[Process]',
                         'msg': `Option: '${opt}' is not supported on nodes. Check supported node options first!`
                     }
                 }
@@ -242,8 +242,8 @@ export class StateManager {
                 let typeViolation = !SupportedValidators[argType](arg)
 
                 if (typeViolation) {
-                    return {
-                        'hasError': true,
+                    throw {
+                        'stage': '[Process]',
                         'msg': `Option: '${opt}' is not of expected type or out of bounds assignment error.\
                                 error.Check command logic definition for errors!`
                     }
@@ -253,8 +253,8 @@ export class StateManager {
                 let optSupported = SupportedConnOpts[opt] ? SupportedConnOpts[opt].active : false
 
                 if (!optSupported) {
-                    return {
-                        'hasError': true,
+                    throw {
+                        'stage': '[Process]',
                         'msg': `Option: '${opt}' is not supported on conns. Check supported conns operations first!`
                     }
                 }
@@ -263,15 +263,14 @@ export class StateManager {
                 let typeViolation = !SupportedValidators[argType](arg)
 
                 if (typeViolation) {
-                    return {
-                        'hasError': true,
+                    throw {
+                        'stage': '[Process]',
                         'msg': `Option: '${opt}' is not of expected type or out of bounds assignment error.\
                                 error.Check command logic definition for errors!`
                     }
                 }
             }
         }
-        return { 'hasError': false }
     }
 
     _getNextId(type) {

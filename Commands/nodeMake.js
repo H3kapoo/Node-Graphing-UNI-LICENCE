@@ -2,41 +2,47 @@ data = {
     "schema": {
         "name": 'node.make',
         "mandatory": ["-pos"],
-        "-pos": "twoDimIntVecs",    //1,2|3,4 (strictly two of grp length)
-        "-radius": "oneDimIntVec", // str,str
+        "-pos": "twoPositiveNumberVecs",
+        "-radius": "positiveNumberVec",
     },
-    "logic": {
-        "name": "nodeMake",
-        nodeMake(parsedData, state) {
+    logic(parsedData, state) {
 
-            const nodePosVecs = parsedData['-pos']
-            const nodeTypes = parsedData['-radius'] || []
+        /*extract needed load*/
+        const nodePosVecs = parsedData.get('pos')
+        const nodeRadii = parsedData.get('radius')
 
-            for (let i = 0; i < nodePosVecs.length; i++) {
-                let data = { ...parsedData }                 //copy cus js reference sucks
-                data['-pos'] = nodePosVecs[i]
-                data['-radius'] = nodeTypes[i] || "KEEP_UNCHANGED"         // put int for default val
+        /*create 'push' data payload*/
+        for (let i = 0; i < nodePosVecs.length; i++) {
+            let data = {}
 
-                let stateResult = state.pushCreateNode(data) //error and msg if any
+            data.pos = nodePosVecs[i]
+            data.radius = nodeRadii[i]
 
-                if (stateResult.hasError) return stateResult
-            }
-
-            //at this point,this is guaranteed not to throw errors
-            //it returns the updates done as {} , can be used to
-            //format a pretty output
-            let pushResult = state.executePushed()
-            let msg = 'Created node(s): '
-
-            pushResult.msg.forEach((act, index) => {
-                if (act.type == 'createNode') {
-                    msg += 'id ' + act.opts['-node_id'] + ' at (' + act.opts['-pos'][0] + ',' + act.opts['-pos'][1] + ')'
-                    if (index < pushResult.msg.length - 1)
-                        msg += ', '
-                }
-            });
-
-            return { msg }
+            state.pushCreateNode(data)
         }
+
+        /*execute the pushed commands*/
+        const pushResult = state.executePushed()
+
+        /*optional,let's assure something got executed + */
+        /*optional,but nice,prepare an output for success*/
+        let msg = pushResult.msg.length ? 'Created node(s): ' : 'Success, but nothing pushed for execution!'
+
+        pushResult.msg.forEach((act, index) => {
+            if (act.type == 'createNode') {
+                let nId = act.opts.node_id
+                let nPos = act.opts.pos
+                let nRad = act.opts.radius
+
+                msg += `Id=${nId} at (${nPos[0]},${nPos[1]})`
+                msg += nRad ? ` with radius=${nRad}` : ``
+
+                if (index < pushResult.msg.length - 1)
+                    msg += ', '
+            }
+        })
+
+        /*to the stdOut with it..*/
+        return { msg }
     }
 }

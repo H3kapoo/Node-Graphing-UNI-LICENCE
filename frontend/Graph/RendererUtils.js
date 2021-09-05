@@ -161,8 +161,8 @@ export function sub(vec, vec2) {
 export function getNodeData(po, opt) {
 
     const nodeDefaults = {
-        '-color': 'black',
-        '-radius': 30
+        'color': 'black',
+        'radius': 30
     }
     if (po[opt] || po[opt] === 0)
         return po[opt]
@@ -172,9 +172,9 @@ export function getNodeData(po, opt) {
 export function getConnData(po, opt) {
 
     const connDefaults = {
-        '-color': 'black',
-        '-directed': false, //conns are undir by default
-        '-elev': 100
+        'color': 'black',
+        'directed': false, //conns are undir by default
+        'elev': 100
     }
 
     if (po[opt] || po[opt] === 0)

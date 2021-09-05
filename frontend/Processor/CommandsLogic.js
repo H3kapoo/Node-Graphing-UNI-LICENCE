@@ -1,12 +1,10 @@
 /*Commands loaded will be populated in here, some helper functions already live here*/
 export let CommandsLogic = {
-    get(po, opt) {
-        if (po[opt])
-            return po[opt]
-        return []
-    },
-    set(val, fallback = "KEEP_UNCHANGED") {
-        if (val === undefined) return fallback
-        return val
+    call(funcName, parsedData, state) {
+        if (this[funcName]) return this[funcName](parsedData, state)
+        else throw {
+            'stage': '[Process]',
+            'msg': `Can't call unexisting command: '${funcName}' inside command '${parsedData.cmdName}'!`
+        }
     }
 }
