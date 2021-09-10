@@ -1,7 +1,7 @@
 /*Internal Imports*/
 import { SupportedValidators, SupportedConnOpts, SupportedNodeOpts } from "./StateSupport"
-
-//NOTE: this all returns to CommandProcessor.js -> GraphManager.js -> stderr/stdout
+import { NodeObj } from "../Objects/NodeObj"
+import { ConnObj } from "../Objects/ConnObj"
 
 /*Class that handles the manipulation of bounded graph state state*/
 export class StateManager {
@@ -17,9 +17,6 @@ export class StateManager {
         }
     }
 
-    //TODO: Indeed for now we expect all options to come as this [] and not as this [[]]
-    //This might throw a problem in the future and it needs to be addressed
-
     /*Public funcs*/
     pushCreateNode(opts) {
 
@@ -34,7 +31,17 @@ export class StateManager {
         opts.node_id = nId
 
         /*Push to processing queue */
-        this._actionsQueue_.push({ 'type': 'createNode', 'opts': opts })
+        this._actionsQueue_.push({ 'type': 'createNode', 'opts': opts, 'param': opts })
+
+        /*Experimental animation data*/
+        // opts.anim = {
+        //     'duration': 10000, //travel duration in ms
+        //     'pos': [500, 500] //pos target
+        // }
+
+        /*Experimental*/
+        // this._state_.nodes[nId] = new NodeObj(opts)
+
     }
 
     pushUpdateNode(opts) {
@@ -43,25 +50,29 @@ export class StateManager {
         /* 2. CHECK if the node id we want to target exists */
         /* 3. Update all the new opt state to the node */
 
-        let verif = this._validateUserProcessed('node', opts)
+        if (opts.id === undefined)
+            throw {
+                'stage': '[Process]',
+                'msg': `No Node Id provided for pushUpdate !`
+            }
 
-        if (verif.msg)
-            throw verif
+        this._validateUserProcessed('node', opts)
 
-        let node = this._state_.nodes[opts['-id']]
+        let node = this._state_.nodes[opts.id]
 
         if (node === undefined) {
             throw {
-                'msg': `Node Id: ${opts['-id']} has not been found!`
+                'stage': '[Process]',
+                'msg': `Node Id: ${opts.id} has not been found!`
             }
         }
 
         /* Nodes have a node_id internally, discard the passed '-id' */
         /* In order to avoid duplication of same information */
-        delete opts['-id']
+        delete opts.id
 
-        /*calculate what ACTUALLY changed and pass that to push + apply to normal node*/
-        let diff = { '-node_id': node['-node_id'] }
+        /* Calculate what ACTUALLY changed and pass that to push + apply to normal node*/
+        let diff = { 'node_id': node.node_id }
         for (const [opt, arg] of Object.entries(opts)) {
             if (!node[opt])
                 diff[opt] = arg
@@ -73,6 +84,9 @@ export class StateManager {
         }
 
         this._actionsQueue_.push({ 'type': 'updateNode', 'opts': node, 'param': diff })
+
+        this._state_.nodes[node.node_id] = node
+
     }
 
     pushDeleteNode(node_id) {
@@ -83,17 +97,19 @@ export class StateManager {
 
         if (node === undefined) {
             throw {
+                'stage': '[Process]',
                 'msg': `Can't delete non-existent node Id: ${node_id}`
             }
         }
 
         /* Find conns referenced by node and delete them */
-        for (let i = 0; i < node['-conn_refs'].length; i++) {
-            let connId = node['-conn_refs'][i]
-            this.pushDeleteConn(connId) //TODO: not sure if here needs to be a try/catch,see later
+        if (node.conn_refs) {
+            for (let i = 0; i < node.conn_refs.length; i++) {
+                let connId = node.conn_refs[i]
+                this.pushDeleteConn(connId)
+            }
         }
-
-        this._actionsQueue_.push({ 'type': 'deleteNode', 'opts': node_id })
+        this._actionsQueue_.push({ 'type': 'deleteNode', 'opts': node_id, 'param': { node_id } })
     }
 
     pushCreateConn(opts) {
@@ -102,42 +118,37 @@ export class StateManager {
         /* 3. Assign the 'to be created' node an unique ID */
         /* 4. Push it to the queue */
 
-        let verif = this._validateUserProcessed('conn', opts)
+        this._validateUserProcessed('conn', opts)
 
-        if (verif.hasError) return verif
-
-        if (this._state_.nodes[opts['-id_src']] === undefined ? true : false)
-            return {
-                'hasError': true,
-                'msg': `Node Id ${opts['-id_src']} doesn't exist`
+        if (this._state_.nodes[opts.id_src] === undefined)
+            throw {
+                'stage': '[Process]',
+                'msg': `Node Id ${opts.id_src} doesn't exist`
             }
 
-        if (this._state_.nodes[opts['-id_dest']] === undefined ? true : false)
-            return {
-                'hasError': true,
-                'msg': `Node Id ${opts['-id_dest']} doesn't exist`
+        if (this._state_.nodes[opts.id_dest] === undefined)
+            throw {
+                'stage': '[Process]',
+                'msg': `Node Id ${opts.id_dest} doesn't exist`
             }
 
         let cId = this._getNextId('conn')
-        opts['-conn_id'] = cId
+        opts.conn_id = cId
 
         /* Add conn reference to this connected nodes */
-        if (!this._state_.nodes[opts['-id_src']]['-conn_refs'])
-            this._state_.nodes[opts['-id_src']]['-conn_refs'] = []
+        if (!this._state_.nodes[opts.id_src].conn_refs)
+            this._state_.nodes[opts.id_src].conn_refs = []
 
-        if (!this._state_.nodes[opts['-id_dest']]['-conn_refs'])
-            this._state_.nodes[opts['-id_dest']]['-conn_refs'] = []
+        if (!this._state_.nodes[opts.id_dest].conn_refs)
+            this._state_.nodes[opts.id_dest].conn_refs = []
 
 
         //TODO: create adj list for nodes of conn
-        this._state_.nodes[opts['-id_dest']]['-conn_refs'].push(cId)
-        this._state_.nodes[opts['-id_src']]['-conn_refs'].push(cId)
+        this._state_.nodes[opts.id_src].conn_refs.push(cId)
+        this._state_.nodes[opts.id_dest].conn_refs.push(cId)
 
         /* Push to processing queue */
-        this._actionsQueue_.push({ 'type': 'createConn', 'opts': opts })
-
-        return { 'hasError': false }
-
+        this._actionsQueue_.push({ 'type': 'createConn', 'opts': opts, 'param': opts })
     }
 
     pushUpdateConn(opts) {
@@ -146,28 +157,35 @@ export class StateManager {
         /* 2. CHECK if the node id we want to target exists */
         /* 3. Update all the new opt state to the node */
 
-        let verif = this._validateUserProcessed('conn', opts)
+        this._validateUserProcessed('conn', opts)
 
-        if (verif.hasError) return verif
-
-        let conn = this._state_.conns[opts['-id']]
+        let conn = this._state_.conns[opts.id]
 
         if (conn === undefined) {
-            return {
-                'hasError': true,
-                'msg': `Conn Id: ${opts['-id']} has no been found!`
+            throw {
+                'stage': '[Process]',
+                'msg': `Conn Id: ${opts.id} has no been found!`
             }
         }
 
         /* Conns have a conn_id internally, discard the passed '-id' */
         /* In order to avoid duplication of same information */
-        delete opts['-id']
+        delete opts.id
 
         /* Apply opts*/
-        for (const [opt, arg] of Object.entries(opts))
+        /* Calculate what ACTUALLY changed and pass that to push + apply to normal node*/
+        let diff = { 'conn_id': conn.conn_id }
+        for (const [opt, arg] of Object.entries(opts)) {
+            if (!conn[opt])
+                diff[opt] = arg
+            else {
+                if (conn[opt] !== arg)
+                    diff[opt] = arg
+            }
             conn[opt] = arg
+        }
 
-        this._actionsQueue_.push({ 'type': 'updateConn', 'opts': conn })
+        this._actionsQueue_.push({ 'type': 'updateConn', 'opts': conn, 'param': diff })
 
         return { 'hasError': false }
 
@@ -177,20 +195,26 @@ export class StateManager {
         /* 1. See if its really an int*/
         /* 2. Check to see it conn exists*/
         /* 3. Remove the node ID from state*/
+        /* 4. Remove ConnId from node refs*/
 
         let conn = this._state_.conns[conn_id]
 
         if (conn === undefined) {
-            return {
-                'hasError': true,
+            throw {
+                'stage': '[Process]',
                 'msg': `Can't delete non existent conn id: ${conn_id} .`
             }
         }
 
-        this._actionsQueue_.push({ 'type': 'deleteConn', 'opts': conn_id })
+        let opts = {}
 
-        return { 'hasError': false }
+        opts.id_src = conn.id_src
+        opts.id_dest = conn.id_dest
+        opts.conn_id = conn_id
+        opts.validRefs_src = this._removeRefIdOnce(this._state_.nodes[conn.id_src].conn_refs, conn_id)
+        opts.validRefs_dest = this._removeRefIdOnce(this._state_.nodes[conn.id_dest].conn_refs, conn_id)
 
+        this._actionsQueue_.push({ 'type': 'deleteConn', opts, 'param': { conn_id } })
     }
 
     executePushed() {
@@ -205,20 +229,32 @@ export class StateManager {
                     break
                 case 'createConn':
                 case 'updateConn':
-                    this._state_.conns[act.opts['-conn_id']] = act.opts
+                    this._state_.conns[act.opts.conn_id] = act.opts
                     break
                 case 'deleteConn':
-                    delete this._state_.conns[act.opts]
+                    delete this._state_.conns[act.opts.conn_id]
+                    this._state_.nodes[act.opts.id_src].conn_refs = act.opts.validRefs_src   //update valid refs after deletion
+                    this._state_.nodes[act.opts.id_dest].conn_refs = act.opts.validRefs_dest
                     break
             }
         }
+
         let qActs = this._actionsQueue_
         this._actionsQueue_ = []
         return { 'msg': qActs }
     }
 
+    clearActionsQueue() { this._actionsQueue_ = [] }
+
     /* Utility */
     _validateUserProcessed(type, opts) {
+
+        /*If for some reason the user passed empty obj*/
+        if (!Object.entries(opts).length)
+            throw {
+                'stage': '[Process]',
+                'msg': `Passed data payload is empty!`
+            }
 
         delete opts['cmdName']
 
@@ -279,7 +315,20 @@ export class StateManager {
         return 'undefined type'
     }
 
+    _removeRefIdOnce(arr, value) {
+        let arr2 = [...arr]
+        let index = arr2.indexOf(value);
+        if (index > -1) {
+            arr2.splice(index, 1);
+        }
+        return arr2;
+    }
+
+
     /*Getters*/
+
+    getActionsQueue() { return this._actionsQueue_ }
+
     getState() { return this._state_ }
 
     getNodeData() { return { ...this._state_.nodes } }

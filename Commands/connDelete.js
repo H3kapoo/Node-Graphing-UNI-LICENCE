@@ -1,21 +1,21 @@
 data = {
     "schema": {
-        "name": 'node.delete',
+        "name": 'conn.delete',
         "mandatory": ["-id"],
         "-id": "positiveNumberVec"
     },
     logic(parsedData, state) {
 
-        for (let nodeId of parsedData.get('id'))
-            state.pushDeleteNode(nodeId)
+        for (let connId of parsedData.get('id'))
+            state.pushDeleteConn(connId)
 
         let pushResult = state.executePushed()
 
-        let msg = pushResult.msg.length ? 'Deleted node(s): ' : 'Success, but nothing pushed for execution!'
+        let msg = pushResult.msg.length ? 'Deleted conn(s): ' : 'Success, but nothing pushed for execution!'
 
         pushResult.msg.forEach((act, index) => {
-            if (act.type == 'deleteNode') {
-                let nId = act.param.node_id
+            if (act.type == 'deleteConn') {
+                let nId = act.param.conn_id
 
                 msg += `Id=${nId}`
                 if (index < pushResult.msg.length - 1)

@@ -3,34 +3,39 @@ import { StateManager } from "./StateManager"
 import { CommandParser } from "../Parser/CommandParser"
 import { CommandProcessor } from "../Processor/CommandProcessor"
 import { GraphRenderer } from "./GraphRenderer"
+import { AnimationManager } from "../Animation/AnimationManager"
 
 export class GraphManager {
-    _canvasManager_ = undefined
+    #canvasManager = undefined
     _cliManager_ = undefined
 
     _commandParser_ = new CommandParser()
     _commandProcessor_ = new CommandProcessor()
-    graphState_ = new StateManager()
-    graphRenderer_ = undefined
+    #graphState = new StateManager()
 
-    _indexingFlag_ = true //always show indexing at startup 
+    #animationManager = undefined
+    #graphRenderer = undefined
+    _graphRendererInterval_ = undefined
+
+    #indexingFlag = true //always show indexing at startup 
 
     constructor(canvasManager, cliManager) {
-        this._canvasManager_ = canvasManager
+        this.#canvasManager = canvasManager
         this._cliManager_ = cliManager
-        this.graphRenderer_ = new GraphRenderer(this._canvasManager_.getCanvas())
+        this.#graphRenderer = new GraphRenderer(this.#canvasManager.getCanvas())
 
-        /*Show grid at start*/
-        this.graphRenderer_.render(this.graphState_.getState(), this._indexingFlag_)
+        /*Trigger rendering loop*/
+        this.#graphRenderer.render(this.#graphState.getState(), this.#indexingFlag)
 
         /*Backend comms*/
         window.api.receive('nodify-indexing-artifacts-toggle', (evt, args) => {
-            this._indexingFlag_ = !this._indexingFlag_
-            this.graphRenderer_.render(this.graphState_.getState(), this._indexingFlag_)
+            this.#indexingFlag = !this.#indexingFlag
+            this.#graphRenderer.render(this.#graphState.getState(), this.#indexingFlag)
         })
     }
 
     /*Public funcs*/
+
     compute(evt) {
 
         if (evt.which !== 13) return
@@ -48,21 +53,21 @@ export class GraphManager {
                 let parsedResult = this._commandParser_.parse(commandText)
 
                 /* If parsed data is ok,process command on current state schema */
-                let processedResult = this._commandProcessor_.process(this.graphState_, parsedResult)
+                let processedResult = this._commandProcessor_.process(this.#graphState, parsedResult)
 
-                /* Do the rendering with updates applied */
-                this.graphRenderer_.render(this.graphState_.getState(), this._indexingFlag_)
+                /* Render pass*/
+                this.#graphRenderer.render(this.#graphState.getState(), this.#indexingFlag)
 
                 /* Output to CLI the cmd output */
                 this._cliManager_.outputStd('[GraphInfo]', processedResult.msg)
             }
         } catch (err) {
+            console.log(err)
             /* Special handle when the line is empty*/
             if (err.emptyLine)
                 return this._cliManager_.outputStd(err.stage, err.msg)
 
             /* Catch errors thrown by parsing or process stage*/
-            console.log(err.stage)
             this._cliManager_.outputErr(err.stage, err.msg)
         }
     }

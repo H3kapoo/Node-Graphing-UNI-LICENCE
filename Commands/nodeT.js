@@ -1,30 +1,48 @@
-//TEST COMMAND
 data = {
     "schema": {
         "name": 'node.t',
-        "mandatory": [],
-        "-a": "oneString",
-        "-b": "onePositiveInt",
-        "-c": "oneNumberInt",
-        "-d": "twoString",
-        "-e": "twoPositiveInt",
-        "-f": "twoNumberInt",
-        "-g": "stringVec",
-        "-h": "positiveIntVec",
-        "-i": "numberIntVec",
-        "-j": "twoStringVecs",
-        "-k": "twoPositiveIntVecs",
-        "-l": "twoNumberIntVecs",
-        "-m": "stringVecs",
-        "-n": "positiveIntVecs",
-        "-o": "numberIntVecs",
+        "mandatory": ["-pos"],
+        "-pos": "twoPositiveNumberVecs",
+        "-radius": "positiveNumberVec",
     },
-    "logic": {
-        "name": "nodeT",
-        nodeT(parsedData, state) {
-            return { 'msg': "pass" }
+    logic(parsedData, state) {
+        /*extract needed load*/
+        const nodePosVecs = parsedData.get('pos')
+        const nodeRadii = parsedData.get('radius')
 
+        /*create 'push' data payload*/
+        for (let i = 0; i < nodePosVecs.length; i++) {
+            const data = {}
+
+            data.pos = nodePosVecs[i]
+            data.radius = nodeRadii[i]
+
+            state.pushCreateNode(data)
+            // state.pushUpdateNode({ 'id': nId, 'pos': [400, 400] })
         }
-    }
 
+        /*execute the pushed commands*/
+        const pushResult = state.executePushed()
+
+        // /*optional,let's assure something got executed + */
+        // /*optional,but nice,prepare an output for success*/
+        let msg = pushResult.msg.length ? 'Created node(s): ' : 'Success, but nothing pushed for execution!'
+
+        pushResult.msg.forEach((act, index) => {
+            if (act.type == 'createNode') {
+                let nId = act.param.node_id
+                let nPos = act.param.pos
+                let nRad = act.param.radius
+
+                msg += `Id=${nId} at (${nPos[0]},${nPos[1]})`
+                msg += nRad ? ` with radius=${nRad}` : ``
+
+                if (index < pushResult.msg.length - 1)
+                    msg += ', '
+            }
+        })
+
+        /*to the stdOut with it..*/
+        return { msg }
+    }
 }

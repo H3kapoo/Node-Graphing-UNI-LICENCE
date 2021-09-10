@@ -13,11 +13,14 @@ import { CanvasManager } from './Canvas/CanvasManager';
 import { GraphManager } from './Graph/GraphManager';
 import { CommandsSchemas } from '../frontend/Parser/CommandsSchemas'
 import { CommandsLogic } from '../frontend/Processor/CommandsLogic'
+import { Events } from "./Events/Events";
 
 /*Class Inits*/
 const cliTabManager_ = new CLITabManager('cli-textarea')
 const canvasManager_ = new CanvasManager('canvas')
 const graphManager_ = new GraphManager(canvasManager_, cliTabManager_)
+
+Events.init()
 
 /*Split into 2 parts (cli and canvas)*/
 Split(['#left-side', '#right-side'], { sizes: [65, 35] })

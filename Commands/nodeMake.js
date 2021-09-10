@@ -13,12 +13,12 @@ data = {
 
         /*create 'push' data payload*/
         for (let i = 0; i < nodePosVecs.length; i++) {
-            let data = {}
+            const data = {}
 
             data.pos = nodePosVecs[i]
             data.radius = nodeRadii[i]
 
-            state.pushCreateNode(data)
+            const nId = state.pushCreateNode(data)
         }
 
         /*execute the pushed commands*/
@@ -30,9 +30,9 @@ data = {
 
         pushResult.msg.forEach((act, index) => {
             if (act.type == 'createNode') {
-                let nId = act.opts.node_id
-                let nPos = act.opts.pos
-                let nRad = act.opts.radius
+                let nId = act.param.node_id
+                let nPos = act.param.pos
+                let nRad = act.param.radius
 
                 msg += `Id=${nId} at (${nPos[0]},${nPos[1]})`
                 msg += nRad ? ` with radius=${nRad}` : ``
