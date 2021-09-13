@@ -3,7 +3,6 @@ import { StateManager } from "./StateManager"
 import { CommandParser } from "../Parser/CommandParser"
 import { CommandProcessor } from "../Processor/CommandProcessor"
 import { GraphRenderer } from "./GraphRenderer"
-import { AnimationManager } from "../Animation/AnimationManager"
 
 export class GraphManager {
     #canvasManager = undefined
@@ -36,7 +35,7 @@ export class GraphManager {
 
     /*Public funcs*/
 
-    compute(evt) {
+    async compute(evt) {
 
         if (evt.which !== 13) return
 
@@ -53,13 +52,13 @@ export class GraphManager {
                 let parsedResult = this._commandParser_.parse(commandText)
 
                 /* If parsed data is ok,process command on current state schema */
-                let processedResult = this._commandProcessor_.process(this.#graphState, parsedResult)
+                let processedResult = await this._commandProcessor_.process(this.#graphState, parsedResult)
 
                 /* Render pass*/
                 this.#graphRenderer.render(this.#graphState.getState(), this.#indexingFlag)
 
                 /* Output to CLI the cmd output */
-                this._cliManager_.outputStd('[GraphInfo]', processedResult.msg)
+                this._cliManager_.outputStd('[GraphInfo]', "processedResult.msg")
             }
         } catch (err) {
             console.log(err)

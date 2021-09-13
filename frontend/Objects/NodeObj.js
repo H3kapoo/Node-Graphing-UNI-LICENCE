@@ -10,19 +10,20 @@ export class NodeObj {
         this.#objAnimator = new ObjectAnimator()
 
         /*If node is created with an animation,add it to animator*/
-        if (state.anim)
-            this.#objAnimator.setAnimData(state.anim)
+        if (state.anim) {
+            this.#objAnimator.setUpAnim(this.#currentState.anim)
+        }
     }
 
     /*Public functs*/
 
-    updateState(newState) {
-        this.#currentState = newState
-    }
-
     updateAnimations() {
         this.#objAnimator.nextAnimationState(this.#currentState)
     }
+
+    isAnimationDone() { return this.#objAnimator.isAnimationDone() }
+
+    hasAnimation() { return this.#currentState.anim ? true : false }
 
     /*Getters*/
 

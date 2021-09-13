@@ -1,17 +1,13 @@
-import { Events } from "../Events/Events"
-
 /*Class that actually executes the transition of animations logic*/
 export class ObjectAnimator {
 
-    #animatorManager = undefined
-
     #animData = undefined
     #animAux = undefined
-
     #renderTriggerTime = 16 //(ms) to be removed
     #durationDone = 0
     #totalDuration = undefined
     #animationDone = false
+    #notified = false
     #t = 0
 
     constructor() { }
@@ -19,16 +15,20 @@ export class ObjectAnimator {
     /*Public functs*/
 
     nextAnimationState(currentState) {
-        /*if animation done,exit*/
-        if (this.#animationDone) return
 
+        /*if animation done,exit*/
+        if (this.#t === 1 && !this.#notified) {
+            console.log('[OA] Anim done')
+            this.#animationDone = true
+            delete currentState.anim
+            this.#notified = true
+        }
 
         this.#transition(currentState)
 
         this.#durationDone += this.#renderTriggerTime
         this.#t = this.#durationDone / this.#totalDuration //will give done travel as percentage %
         if (this.#t >= 1) {
-            this.#animationDone = true
             this.#t = 1
             this.#transition(currentState)
         }
@@ -38,21 +38,10 @@ export class ObjectAnimator {
     #transition(currentState) {
 
         if (this.#animAux === undefined) this.#animAux = { ...currentState }
-
         /*for each transitionable option in _animData_ for currentState..*/
         for (const [opt, arg] of Object.entries(this.#animData))
-            currentState[opt] = this[`_${opt}Transitioner`](this.#animAux[opt], arg)
-    }
-
-
-    /*Private functs*/
-    #notifyAnimationStarted() {
-        /*Notify animation manager that animations are finished*/
-        document.dispatchEvent(Events.notifyObjectAnimationStarted);
-    }
-    #notifyAnimationFinish() {
-        /*Notify animation manager that animations are finished*/
-        document.dispatchEvent(Events.notifyObjectAnimationFinished);
+            if (this.isTransitionable(opt))
+                currentState[opt] = this[`_${opt}Transitioner`](this.#animAux[opt], arg)
     }
 
     /*Transitioners*/
@@ -63,17 +52,21 @@ export class ObjectAnimator {
         return [npx, npy]
     }
 
+    isTransitionable(opt) {
+        if (opt === 'pos') return true
+        return false
+    }
+
+    /*Getters*/
+    isAnimationDone() { return this.#animationDone }
+
     /*Setters*/
 
-    setAnimData(data) {
-
-        /*Notify animation manager that animation is pushed*/
-        // this.#notifyAnimationStarted()
-
-        this.#totalDuration = data.duration
-
-        //delete non transitionable but required data
-        delete data.duration
+    setUpAnim(data) {
+        this.#totalDuration = data.dt
+        this.#animData = undefined
+        this.#animationDone = false
+        this.#notified = false
 
         this.#animData = data
     }

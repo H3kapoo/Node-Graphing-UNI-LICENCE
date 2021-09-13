@@ -3,46 +3,39 @@ data = {
         "name": 'node.t',
         "mandatory": ["-pos"],
         "-pos": "twoPositiveNumberVecs",
-        "-radius": "positiveNumberVec",
+        // "-radius": "positiveNumberVec",
+        "-dt": 'onePositiveNumber',
+        "-wait": 'oneString',
+
     },
-    logic(parsedData, state) {
+    async logic(parsedData, state) {
         /*extract needed load*/
         const nodePosVecs = parsedData.get('pos')
         const nodeRadii = parsedData.get('radius')
+        const dt = parsedData.get('dt')
+        const wait = parsedData.get('wait')
+
 
         /*create 'push' data payload*/
         for (let i = 0; i < nodePosVecs.length; i++) {
             const data = {}
 
-            data.pos = nodePosVecs[i]
-            data.radius = nodeRadii[i]
+            data.pos = [2, 2]
+            // data.radius = nodeRadii[i] //this becomes undefined,not needed,clear
+            data.anim = {
+                'shouldWait': wait[0] === '1' ? true : false,
+                'dt': dt[0] || 0, //travel duration in ms
+                'pos': nodePosVecs[i] //pos target
+            }
+            console.log('pushed')
+            let r = await state.pushCreateNode(data)
+            console.log('r', r)
 
-            state.pushCreateNode(data)
-            // state.pushUpdateNode({ 'id': nId, 'pos': [400, 400] })
+            // console.log('awaited anim: ', data.pos)
         }
 
-        /*execute the pushed commands*/
-        const pushResult = state.executePushed()
-
-        // /*optional,let's assure something got executed + */
-        // /*optional,but nice,prepare an output for success*/
-        let msg = pushResult.msg.length ? 'Created node(s): ' : 'Success, but nothing pushed for execution!'
-
-        pushResult.msg.forEach((act, index) => {
-            if (act.type == 'createNode') {
-                let nId = act.param.node_id
-                let nPos = act.param.pos
-                let nRad = act.param.radius
-
-                msg += `Id=${nId} at (${nPos[0]},${nPos[1]})`
-                msg += nRad ? ` with radius=${nRad}` : ``
-
-                if (index < pushResult.msg.length - 1)
-                    msg += ', '
-            }
-        })
 
         /*to the stdOut with it..*/
-        return { msg }
+        return { "msg": "msg" }
     }
 }

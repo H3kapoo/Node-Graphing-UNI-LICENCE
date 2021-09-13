@@ -3,80 +3,61 @@ import * as utils from './RendererUtils'
 /*Class that handles the rendering of canvas elements*/
 export class GraphRenderer {
 
-    ctx_ = undefined
-    _width_ = undefined
-    _height_ = undefined
+    #ctx = undefined
+    #width = undefined
+    #height = undefined
 
-    #indexingFlag = false
-    #intervalHandler = undefined
+    #stateRef = undefined
+    #animationManagerRef = undefined
+    #indexingFlag = true
 
-    #renderMode = 'once'
+    constructor(stateRef, canvasDetails) {
+        this.#ctx = canvasDetails.getContext('2d')
+        this.#width = canvasDetails.width
+        this.#height = canvasDetails.height
+        this.#stateRef = stateRef
 
-    constructor(canvasDetails) {
-        this.ctx_ = canvasDetails.getContext('2d')
-        this._width_ = canvasDetails.width
-        this._height_ = canvasDetails.height
+        /*Backend comms*/
+        window.api.receive('nodify-indexing-artifacts-toggle', (evt, args) => {
+            this.#indexingFlag = !this.#indexingFlag
+            this.render()
+        })
     }
 
     /*Public funcs*/
+    render() {
 
-    // changeRenderMode(mode) {
+        this.#ctx.fillStyle = 'white'
+        this.#ctx.rect(0, 0, this.#width, this.#height);
+        this.#ctx.fill();
 
-    //     if (mode === 'loop') {
-    //         if (this.#intervalHandler) return
-    //         this.#renderMode = 'loop'
-    //     }
+        console.log('[GR] Rendering..')
+        if (this.#indexingFlag)
+            this.#renderGrid()
 
-    //     if (mode === 'once') {
-    //         clearInterval(this.#intervalHandler)
-    //         this.#intervalHandler = undefined
-    //         this.#renderMode = 'once'
-    //     }
-    // }
-
-    render(state, indexingFlag) {
-        if (this.#renderMode === 'loop') {
-            this.#intervalHandler = setInterval(() => this.#render(state, indexingFlag), 16) //ms
-        }
-
-        if (this.#renderMode === 'once') {
-            this.#render(state, indexingFlag)
-        }
+        // this.#renderConns(state)
+        this.#renderNodes(this.#stateRef)
+        this.#animationManagerRef.updateAnimations()
+        // if (indexingFlag)
+        //     this._indexingPass(state)
     }
 
-    #render(state, indexingFlag) {
-
-        this.ctx_.fillStyle = 'white'
-        this.ctx_.rect(0, 0, this._width_, this._height_);
-        this.ctx_.fill();
-
-        console.log('rendering')
-        if (indexingFlag)
-            this._renderGrid()
-
-        this._renderConns(state)
-        this._renderNodes(state)
-
-        if (indexingFlag)
-            this._indexingPass(state)
-    }
-
-    _renderGrid(spacing = 100) {
-        for (let x = spacing; x < this._width_; x += spacing)
-            for (let y = spacing; y < this._height_; y += spacing) {
+    #renderGrid(spacing = 100) {
+        for (let x = spacing; x < this.#width; x += spacing)
+            for (let y = spacing; y < this.#height; y += spacing) {
                 let text = x.toString() + ',' + y.toString()
-                utils.debugText(this.ctx_, [x, y], text)
+                utils.debugText(this.#ctx, [x, y], text)
             }
 
-        for (let y = 0; y < this._height_; y += spacing)
-            utils.debugLine(this.ctx_, [0, y], [this._width_, y])
+        for (let y = 0; y < this.#height; y += spacing)
+            utils.debugLine(this.#ctx, [0, y], [this.#width, y])
 
-        for (let x = 0; x < this._width_; x += spacing)
-            utils.debugLine(this.ctx_, [x, 0], [x, this._height_])
+        for (let x = 0; x < this.#width; x += spacing)
+            utils.debugLine(this.#ctx, [x, 0], [x, this.#height])
     }
 
     /*Private funcs*/
-    _renderConns(state) {
+    #renderConns(state) {
         for (const [_, connData] of Object.entries(state.conns)) {
             let srcPos = utils.getNodeData(state.nodes[connData.id_src], 'pos')
             let destPos = utils.getNodeData(state.nodes[connData.id_dest], 'pos')
@@ -91,79 +72,57 @@ export class GraphRenderer {
             /* Draw with arrow */
             if (directed) {
                 let arrowPoints = utils.getArrowPoints(res.lineEnd, res.cpPos)
-                this.ctx_.beginPath()
-                this.ctx_.fillStyle = 'black'
-                this.ctx_.lineWidth = 4 //hardcoded
-                this.ctx_.beginPath();
-                this.ctx_.moveTo(arrowPoints.p1[0], arrowPoints.p1[1])
-                this.ctx_.lineTo(arrowPoints.p2[0], arrowPoints.p2[1])
-                this.ctx_.lineTo(arrowPoints.p3[0], arrowPoints.p3[1])
-                this.ctx_.fill()
+                this.#ctx.beginPath()
+                this.#ctx.fillStyle = 'black'
+                this.#ctx.lineWidth = 4 //hardcoded
+                this.#ctx.beginPath();
+                this.#ctx.moveTo(arrowPoints.p1[0], arrowPoints.p1[1])
+                this.#ctx.lineTo(arrowPoints.p2[0], arrowPoints.p2[1])
+                this.#ctx.lineTo(arrowPoints.p3[0], arrowPoints.p3[1])
+                this.#ctx.fill()
             }
 
             /* Curve */
-            this.ctx_.beginPath()
-            this.ctx_.strokeStyle = color
-            this.ctx_.lineWidth = 4 //hardcoded
-            this.ctx_.beginPath()
-            this.ctx_.moveTo(res.lineStart[0], res.lineStart[1])
-            this.ctx_.quadraticCurveTo(res.cpPos[0], res.cpPos[1], res.lineEnd[0], res.lineEnd[1])
-            this.ctx_.stroke()
+            this.#ctx.beginPath()
+            this.#ctx.strokeStyle = color
+            this.#ctx.lineWidth = 4 //hardcoded
+            this.#ctx.beginPath()
+            this.#ctx.moveTo(res.lineStart[0], res.lineStart[1])
+            this.#ctx.quadraticCurveTo(res.cpPos[0], res.cpPos[1], res.lineEnd[0], res.lineEnd[1])
+            this.#ctx.stroke()
         }
     }
 
-    _renderNodes(state) {
+    #renderNodes(state) {
 
-        for (const [_, nodeData] of Object.entries(state.nodes)) {
-            // const nodeData = nodeObj.getCurrentState()
+        for (const [_, nodeObj] of Object.entries(state.nodes)) {
+            const nodeData = nodeObj.getCurrentState()
             let pos = utils.getNodeData(nodeData, 'pos')
             let id = utils.getNodeData(nodeData, 'node_id')
             let radius = utils.getNodeData(nodeData, 'radius')
 
             //draw node itself
-            this.ctx_.beginPath()
-            this.ctx_.arc(pos[0], pos[1], radius, 0, 2 * Math.PI)
-            this.ctx_.lineWidth = 4 //hardcoded
-            this.ctx_.strokeStyle = 'black'
-            this.ctx_.stroke()
+            this.#ctx.beginPath()
+            this.#ctx.arc(pos[0], pos[1], radius, 0, 2 * Math.PI)
+            this.#ctx.lineWidth = 4 //hardcoded
+            this.#ctx.strokeStyle = 'black'
+            this.#ctx.stroke()
 
             /*Update node animations,if any*/
-            // nodeObj.updateAnimations()
+            // if (nodeObj.hasAnimation())
+            //     nodeObj.updateAnimations()
 
             /*indexing artifacts*/
             if (this.#indexingFlag) {
 
-                this.ctx_.font = '2em Courier New'
-                this.ctx_.textAlign = "center"
-                this.ctx_.textBaseline = "middle"
-                this.ctx_.lineWidth = 2 //hardcoded
-                this.ctx_.fillText(id.toString(), pos[0], pos[1] - 1.5 * radius)
-                this.ctx_.strokeText(id.toString(), pos[0], pos[1] - 1.5 * radius)
+                this.#ctx.font = '2em Courier New'
+                this.#ctx.textAlign = "center"
+                this.#ctx.textBaseline = "middle"
+                this.#ctx.lineWidth = 2 //hardcoded
+                this.#ctx.fillText(id.toString(), pos[0], pos[1] - 1.5 * radius)
+                this.#ctx.strokeText(id.toString(), pos[0], pos[1] - 1.5 * radius)
             }
         }
-        // for (const [_, nodeData] of Object.entries(state.nodes)) {
-        //     let pos = utils.getNodeData(nodeData, 'pos')
-        //     let id = utils.getNodeData(nodeData, 'node_id')
-        //     let radius = utils.getNodeData(nodeData, 'radius')
-
-        //     //node itself
-        //     this.ctx_.beginPath()
-        //     this.ctx_.arc(pos[0], pos[1], radius, 0, 2 * Math.PI)
-        //     this.ctx_.lineWidth = 4 //hardcoded
-        //     this.ctx_.strokeStyle = 'black'
-        //     this.ctx_.stroke()
-
-        //     /*indexing artifacts*/
-        //     if (this.#indexingFlag) {
-
-        //         this.ctx_.font = '2em Courier New'
-        //         this.ctx_.textAlign = "center"
-        //         this.ctx_.textBaseline = "middle"
-        //         this.ctx_.lineWidth = 2 //hardcoded
-        //         this.ctx_.fillText(id.toString(), pos[0], pos[1] - 1.5 * radius)
-        //         this.ctx_.strokeText(id.toString(), pos[0], pos[1] - 1.5 * radius)
-        //     }
-        // }
     }
 
     _indexingPass(state) {
@@ -181,12 +140,12 @@ export class GraphRenderer {
             let elevBias = 25
             let elevBiasPassed = elev >= 0 ? elevBias : -elevBias
             let indexingPos = utils.getConnIndexingPointWithElev(res.lineStart, res.cpPos, res.lineEnd, elevBiasPassed)
-            this.ctx_.font = '2em Courier New'
-            this.ctx_.textAlign = "center"
-            this.ctx_.textBaseline = "middle"
-            this.ctx_.lineWidth = 2 //hardcoded
-            this.ctx_.fillText(connId.toString(), indexingPos[0], indexingPos[1])
-            this.ctx_.strokeText(connId.toString(), indexingPos[0], indexingPos[1])
+            this.#ctx.font = '2em Courier New'
+            this.#ctx.textAlign = "center"
+            this.#ctx.textBaseline = "middle"
+            this.#ctx.lineWidth = 2 //hardcoded
+            this.#ctx.fillText(connId.toString(), indexingPos[0], indexingPos[1])
+            this.#ctx.strokeText(connId.toString(), indexingPos[0], indexingPos[1])
         }
 
         /*For nodes*/
@@ -198,12 +157,18 @@ export class GraphRenderer {
             /*indexing artifacts*/
             let elevBias = 25
             let upPoint = [pos[0], pos[1] - radius - elevBias]
-            this.ctx_.font = '2em Courier New'
-            this.ctx_.textAlign = "center"
-            this.ctx_.textBaseline = "middle"
-            this.ctx_.lineWidth = 2 //hardcoded
-            this.ctx_.fillText(id.toString(), upPoint[0], upPoint[1])
-            this.ctx_.strokeText(id.toString(), upPoint[0], upPoint[1])
+            this.#ctx.font = '2em Courier New'
+            this.#ctx.textAlign = "center"
+            this.#ctx.textBaseline = "middle"
+            this.#ctx.lineWidth = 2 //hardcoded
+            this.#ctx.fillText(id.toString(), upPoint[0], upPoint[1])
+            this.#ctx.strokeText(id.toString(), upPoint[0], upPoint[1])
         }
     }
+
+    /*Setters*/
+    setAnimationManagerRef(animationManagerRef) {
+        this.#animationManagerRef = animationManagerRef
+    }
+
 }
