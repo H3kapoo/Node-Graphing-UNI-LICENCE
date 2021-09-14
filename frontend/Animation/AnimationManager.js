@@ -10,16 +10,15 @@ export class AnimationManager {
 
     #animObjectsList = []
     #needsToAwaitAnimation = false
-    func = undefined
-    animCnt = 0
-    constructor() {
-    }
+    #animCnt = 0
+    animDoneCb = undefined
+
+    constructor() { }
+
 
     /*Public functs*/
 
     updateAnimations() {
-        // console.log('[AM] Updating animations..')
-        //trigger the resolve here somehow so we dont need to emit anything
         for (let obj of this.#animObjectsList)
             obj.updateAnimations()
 
@@ -27,7 +26,13 @@ export class AnimationManager {
             if (obj.isAnimationDone()) {
                 const filterObj = (o) => o !== obj;
                 this.#animObjectsList = this.#animObjectsList.filter(filterObj);
-                events.emit('anim-done', {})
+
+                if (this.hasNeedsToAwaitAnimation)
+                    console.log('[AM] Waited for animation is done,calling handler..')
+                else
+                    console.log('[AM] Non-need-to-wait animation done,calling handler..')
+
+                this.animDoneCb()
                 this.#handleDoneAnimation()
             }
         }
@@ -37,8 +42,8 @@ export class AnimationManager {
         if (object.hasAnimation()) {
             this.#animObjectsList.push(object)
 
-            this.animCnt = this.#animObjectsList.length
-            console.log('[AM] Obj has anim, currentCnt: ', this.animCnt)
+            this.#animCnt = this.#animObjectsList.length
+            console.log('[AM] Obj has anim, currentCnt: ', this.#animCnt)
 
             if (this.#renderMode !== 'loop')
                 this.#renderLoop()
@@ -48,38 +53,24 @@ export class AnimationManager {
             /* obj has animation and we should wait for it to finish before proceeding*/
             if (object.getCurrentState().anim.shouldWait === true) {
                 this.#needsToAwaitAnimation = true
+
                 return new Promise((resolve, reject) => {
-                    this.func = function () {
-                        console.log('[AM] Waited for animation is done,calling handler..')
-                        resolve()
-                    }
-                    events.on('anim-done', this.func)
+                    this.animDoneCb = () => resolve()
                 })
             }
 
             /* obj has animation but there's no need to wait for it to finish*/
-            // console.log('[AM] Non-need-to-wait animation done,calling handler..')
             return new Promise((resolve, reject) => {
-                events.on('anim-done', () => console.log('[AM] Non-need-to-wait animation done,calling handler..'))
-                resolve()
+                this.animDoneCb = () => resolve()
             })
 
         }
-        else if (this.#animObjectsList.length === 0) {
-            console.log('[AM] No anims running, mode is once')
-            this.#renderOnce()
-        }
+
+        this.#renderOnce()
 
         /*no animation exists on obj,just resolve immidiately*/
-        return new Promise((resolve, reject) => resolve(8))
+        return new Promise((resolve, reject) => resolve())
     }
-
-    waitForEvent(eventType) {
-        return new Promise(function (resolve) {
-            events.on(eventType, resolve)
-        })
-    }
-
 
     hasNeedsToAwaitAnimation() {
         return this.#needsToAwaitAnimation
@@ -88,14 +79,12 @@ export class AnimationManager {
     /*Private functs*/
     #handleDoneAnimation() {
         this.#needsToAwaitAnimation = false
-        this.animCnt -= 1
+        this.#animCnt -= 1
 
-        if (this.animCnt <= 0) {
+        if (this.#animCnt <= 0)
             this.#renderOnce()
-            events.removeAllListeners('anim-done')
-        }
 
-        console.log('[AM] Animation done handled, anims remaining: ', this.animCnt)
+        console.log('[AM] Animation done handled, anims remaining: ', this.#animCnt)
     }
 
     #renderLoop() {
