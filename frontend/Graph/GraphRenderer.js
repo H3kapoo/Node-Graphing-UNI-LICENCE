@@ -10,6 +10,11 @@ export class GraphRenderer {
     #stateRef = undefined
     #animationManagerRef = undefined
     #indexingFlag = true
+    shouldRedraw = false
+
+    /*frame rates*/
+    then = undefined
+    now = undefined
 
     constructor(stateRef, canvasDetails) {
         this.#ctx = canvasDetails.getContext('2d')
@@ -30,16 +35,16 @@ export class GraphRenderer {
         this.#ctx.fillStyle = 'white'
         this.#ctx.rect(0, 0, this.#width, this.#height);
         this.#ctx.fill();
-
         console.log('[GR] Rendering..')
+
         if (this.#indexingFlag)
             this.#renderGrid()
 
         // this.#renderConns(state)
         this.#renderNodes(this.#stateRef)
-        this.#animationManagerRef.updateAnimations()
         // if (indexingFlag)
         //     this._indexingPass(state)
+
     }
 
     #renderGrid(spacing = 100) {
@@ -107,10 +112,6 @@ export class GraphRenderer {
             this.#ctx.lineWidth = 4 //hardcoded
             this.#ctx.strokeStyle = 'black'
             this.#ctx.stroke()
-
-            /*Update node animations,if any*/
-            // if (nodeObj.hasAnimation())
-            //     nodeObj.updateAnimations()
 
             /*indexing artifacts*/
             if (this.#indexingFlag) {

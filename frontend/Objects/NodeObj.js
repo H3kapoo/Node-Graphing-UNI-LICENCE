@@ -17,8 +17,8 @@ export class NodeObj {
 
     /*Public functs*/
 
-    updateAnimations() {
-        this.#objAnimator.nextAnimationState(this.#currentState)
+    updateAnimations(deltaTime) {
+        return this.#objAnimator.nextAnimationState(this.#currentState, deltaTime)
     }
 
     isAnimationDone() { return this.#objAnimator.isAnimationDone() }

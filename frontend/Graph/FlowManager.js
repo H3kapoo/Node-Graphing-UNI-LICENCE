@@ -4,7 +4,6 @@ import { GraphRenderer } from "./GraphRenderer";
 import { StateManager } from "./StateManager"
 import { AnimationManager } from "../Animation/AnimationManager";
 
-
 export class FlowManager {
 
     #canvasManager = undefined
@@ -24,8 +23,10 @@ export class FlowManager {
 
         /*Set needed refs*/
         this.#stateManager.setAnimationManagerRef(this.#animationManager)
+
+        this.#stateManager.setGraphRendererRef(this.#graphRenderer)
+
         this.#animationManager.setGraphRendererRef(this.#graphRenderer)
-        this.#graphRenderer.setAnimationManagerRef(this.#animationManager)
 
         /*Initial render pass*/
         this.#graphRenderer.render()

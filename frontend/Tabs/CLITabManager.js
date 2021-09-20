@@ -6,7 +6,7 @@ export class CLITabManager {
     _cmdHistoryArray_ = []
     _cmdHistoryArraySize_ = 0
     _cmdHistoryOffset_ = 0
-    _cliIntro_ = "#hekapoo$> " //TODO: fetch this from preferences or something,make it custom
+    _cliIntro_ = "#terminal$> " //TODO: fetch this from preferences or something,make it custom
 
     constructor(cliID) {
         this._CLIObject_ = document.getElementById(cliID)

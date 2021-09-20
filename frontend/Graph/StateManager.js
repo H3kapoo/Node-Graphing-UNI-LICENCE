@@ -11,6 +11,7 @@ export class StateManager {
     #maxConnId = -1
 
     #animationManagerRef = undefined
+    #graphRendererRef = undefined
 
     constructor() {
         this.#state = {
@@ -22,17 +23,23 @@ export class StateManager {
     /*Public funcs*/
 
     async pushCreateNode(opts) {
-        // this._validateUserProcessed('node', opts)
+        // this._validateUserProcessed('node', opts) //decomment later
 
         const nId = this._getNextId('node')
         opts.node_id = nId
-        /*Experimental animation stuff*/
 
         this.#state.nodes[nId] = new NodeObj({ ...opts })
 
-        await this.#animationManagerRef.pushAndWaitAnimIfNeeded(this.#state.nodes[nId])
+        /*Dispatch animation to anim manager*/
+        if (this.#state.nodes[nId].getCurrentState().anim) {
+            await this.#animationManagerRef.handleAnimation(this.#state.nodes[nId])
+            return { 'type': 'createNode', 'paramsNow': this.#state.nodes[nId].getCurrentState(), 'paramsBefore': opts }
+        }
 
-        return { 'type': 'createNode', 'paramsNow': this.#state.nodes[nId].getCurrentState(), 'paramsBefore': opts }
+        /*Just return if no animations are discovered*/
+        this.#graphRendererRef.render()
+        return { 'type': 'createNode', 'paramsNow': this.#state.nodes[nId].getCurrentState() }
+
     }
 
     pushCreateNode2(opts) {
@@ -367,6 +374,9 @@ export class StateManager {
         this.#animationManagerRef = animationManagerRef
     }
 
+    setGraphRendererRef(graphRendererRef) {
+        this.#graphRendererRef = graphRendererRef
+    }
     /*Getters*/
 
     getActionsQueue() { return this.#actionsQueue }

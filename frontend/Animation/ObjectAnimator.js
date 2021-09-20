@@ -14,25 +14,28 @@ export class ObjectAnimator {
 
     /*Public functs*/
 
-    nextAnimationState(currentState) {
+    nextAnimationState(currentState, deltaTime) {
 
         /*if animation done,exit*/
-        if (this.#t === 1 && !this.#notified) {
-            console.log('[OA] Anim done')
-            this.#animationDone = true
-            delete currentState.anim
-            this.#notified = true
-        }
+        // if (this.#t === 1 && !this.#animationDone) {
+        //     console.log('[OA] Anim done')
+        //     this.#animationDone = true
+        //     // delete currentState.anim
+        //     return this.#animationDone
+        // }
 
         this.#transition(currentState)
 
-        this.#durationDone += this.#renderTriggerTime
+        this.#durationDone += deltaTime
         this.#t = this.#durationDone / this.#totalDuration //will give done travel as percentage %
         if (this.#t >= 1) {
             this.#t = 1
             this.#transition(currentState)
+            this.#animationDone = true
         }
 
+        /*return anim done status*/
+        return this.#animationDone
     }
 
     #transition(currentState) {

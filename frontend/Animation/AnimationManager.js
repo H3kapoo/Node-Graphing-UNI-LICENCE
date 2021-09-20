@@ -4,105 +4,91 @@ import events from "./Events"
 
 export class AnimationManager {
 
-    #graphRendererRef = undefined
-    #intervalHandler = undefined
-    #renderMode = 'once'
-
     #animObjectsList = []
     #needsToAwaitAnimation = false
     #animCnt = 0
-    animDoneCb = undefined
+    #resolveAnim = undefined
+    #graphRendererRef = undefined
+    then = undefined
+    now = undefined
 
     constructor() { }
 
-
     /*Public functs*/
 
-    updateAnimations() {
-        for (let obj of this.#animObjectsList)
-            obj.updateAnimations()
+    async handleAnimation(stateObject) {
 
-        for (let obj of this.#animObjectsList) {
-            if (obj.isAnimationDone()) {
-                const filterObj = (o) => o !== obj;
-                this.#animObjectsList = this.#animObjectsList.filter(filterObj);
+        this.#animObjectsList.push(stateObject)
+        this.#animCnt = this.#animObjectsList.length
+        console.log('[AM] Obj has anim, currentCnt: ', this.#animCnt)
 
-                if (this.hasNeedsToAwaitAnimation)
-                    console.log('[AM] Waited for animation is done,calling handler..')
-                else
-                    console.log('[AM] Non-need-to-wait animation done,calling handler..')
+        if (stateObject.getCurrentState().anim.shouldWait === true) {
+            this.#needsToAwaitAnimation = true
+            this.updateAnims()
 
-                this.animDoneCb()
-                this.#handleDoneAnimation()
-            }
-        }
-    }
-
-    async pushAndWaitAnimIfNeeded(object) {
-        if (object.hasAnimation()) {
-            this.#animObjectsList.push(object)
-
-            this.#animCnt = this.#animObjectsList.length
-            console.log('[AM] Obj has anim, currentCnt: ', this.#animCnt)
-
-            if (this.#renderMode !== 'loop')
-                this.#renderLoop()
-
-            const handleDoneAnimationFunc = () => this.#handleDoneAnimation()
-
-            /* obj has animation and we should wait for it to finish before proceeding*/
-            if (object.getCurrentState().anim.shouldWait === true) {
-                this.#needsToAwaitAnimation = true
-
-                return new Promise((resolve, reject) => {
-                    this.animDoneCb = () => resolve()
-                })
-            }
-
-            /* obj has animation but there's no need to wait for it to finish*/
-            return new Promise((resolve, reject) => {
-                this.animDoneCb = () => resolve()
-            })
-
+            return new Promise((resolve, reject) => { this.#resolveAnim = resolve })
         }
 
-        this.#renderOnce()
-
-        /*no animation exists on obj,just resolve immidiately*/
+        /*resolve directly if no need to wait*/
+        this.updateAnims()
         return new Promise((resolve, reject) => resolve())
     }
 
-    hasNeedsToAwaitAnimation() {
-        return this.#needsToAwaitAnimation
+    updateAnims() {
+
+        /*Delta time inits*/
+        if (!this.then)
+            this.then = Date.now()
+
+        this.now = Date.now();
+        let deltaTime = this.now - this.then;
+
+        this.#graphRendererRef.render()
+        console.log('dt ', deltaTime)
+        let animHasFinished = false
+
+        for (let obj of this.#animObjectsList)
+            animHasFinished = obj.updateAnimations(deltaTime)
+
+        if (animHasFinished) {
+            for (let obj of this.#animObjectsList) {
+                if (obj.isAnimationDone()) {
+
+                    /*remove done animation from list of anims*/
+                    const filterObj = (o) => o !== obj;
+                    this.#animObjectsList = this.#animObjectsList.filter(filterObj);
+
+                    /*dbg*/
+                    if (this.hasNeedsToAwaitAnimation)
+                        console.log('[AM] Waited for animation is done,calling handler..')
+                    else
+                        console.log('[AM] Non-need-to-wait animation done,calling handler..')
+
+                    /*resolve waiting promise,if any*/
+                    if (this.#resolveAnim)
+                        this.#resolveAnim()
+
+                    /*handle if GR should changes modes + decrease anim cnt*/
+                    this.#needsToAwaitAnimation = false
+                    this.#animCnt -= 1
+                    window.requestAnimationFrame(() => this.updateAnims())
+
+                    console.log('[AM] Animation done handled, anims remaining: ', this.#animCnt)
+                }
+            }
+        }
+
+        this.then = this.now
+
+        if (this.#animCnt)
+            window.requestAnimationFrame(() => this.updateAnims())
+        else
+            this.then = undefined
     }
+
+    hasNeedsToAwaitAnimation() { return this.#needsToAwaitAnimation }
 
     /*Private functs*/
-    #handleDoneAnimation() {
-        this.#needsToAwaitAnimation = false
-        this.#animCnt -= 1
-
-        if (this.#animCnt <= 0)
-            this.#renderOnce()
-
-        console.log('[AM] Animation done handled, anims remaining: ', this.#animCnt)
-    }
-
-    #renderLoop() {
-        if (this.#intervalHandler) return
-        this.#renderMode = 'loop'
-        this.#intervalHandler = setInterval(() => this.#graphRendererRef.render(), 16) //ms
-        console.log('[AM] Requested mode: loop')
-        console.log('[AM] Created handler: ', this.#intervalHandler)
-    }
-
-    #renderOnce() {
-        clearInterval(this.#intervalHandler)
-        console.log('[AM] Requested mode: once')
-        console.log('[AM] Deleted handler: ', this.#intervalHandler)
-        this.#intervalHandler = undefined
-        this.#renderMode = 'once'
-        this.#graphRendererRef.render()
-    }
 
     /*Setters*/
     setGraphRendererRef(graphRendererRef) {

@@ -15,17 +15,22 @@ data = {
         const dt = parsedData.get('dt')
         const wait = parsedData.get('wait')
 
-
         /*create 'push' data payload*/
         for (let i = 0; i < nodePosVecs.length; i++) {
             const data = {}
-            console.log(ha[0])
+
+            data.anim = {
+                'awaitable': true,
+                'duration': 2000, // (ms)
+                'option_to_animate': target_value
+            }
+
             if (ha[0] === '1') {
                 data.pos = [2, 2]
                 data.anim = {
-                    'shouldWait': wait[0] === '1' ? true : false,
-                    'dt': dt[0] || 0, //travel duration in ms
-                    'pos': nodePosVecs[i] //pos target
+                    'awaitable': true,
+                    'duration': 2000, // (ms)
+                    'option_to_animate': target_value
                 }
             } else {
                 data.pos = nodePosVecs[i]
@@ -33,9 +38,8 @@ data = {
 
             console.log('pushed')
             let r = await state.pushCreateNode(data)
-            console.log('awaited anim: ')
+            console.log('awaited anim: ', r)
         }
-
 
         /*to the stdOut with it..*/
         return { "msg": "msg" }
