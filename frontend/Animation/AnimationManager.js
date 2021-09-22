@@ -16,25 +16,23 @@ export class AnimationManager {
 
     /*Public functs*/
 
-    async handleAnimation(stateObject) {
-
+    async handleAnimation(stateObject, modelUpdateCb) {
         this.#animObjectsList.push(stateObject)
         this.#animCnt = this.#animObjectsList.length
         console.log('[AM] Obj has anim, currentCnt: ', this.#animCnt)
 
-        if (stateObject.getCurrentState().anim.shouldWait === true) {
+        if (stateObject.getCurrentState().anim.awaitable === true) {
             this.#needsToAwaitAnimation = true
-            this.updateAnims()
+            this.updateAnims(modelUpdateCb)
 
             return new Promise((resolve, reject) => { this.#resolveAnim = resolve })
         }
-
         /*resolve directly if no need to wait*/
-        this.updateAnims()
+        this.updateAnims(modelUpdateCb)
         return new Promise((resolve, reject) => resolve())
     }
 
-    updateAnims() {
+    updateAnims(modelUpdateCb) {
 
         /*Delta time inits*/
         if (!this.then)
@@ -43,13 +41,12 @@ export class AnimationManager {
         this.now = Date.now();
         let deltaTime = this.now - this.then;
 
-        this.#graphRendererRef.render()
-        console.log('dt ', deltaTime)
+        modelUpdateCb()
+
         let animHasFinished = false
 
         for (let obj of this.#animObjectsList)
             animHasFinished = obj.updateAnimations(deltaTime)
-
         if (animHasFinished) {
             for (let obj of this.#animObjectsList) {
                 if (obj.isAnimationDone()) {
@@ -71,7 +68,7 @@ export class AnimationManager {
                     /*handle if GR should changes modes + decrease anim cnt*/
                     this.#needsToAwaitAnimation = false
                     this.#animCnt -= 1
-                    window.requestAnimationFrame(() => this.updateAnims())
+                    window.requestAnimationFrame(() => this.updateAnims(modelUpdateCb))
 
                     console.log('[AM] Animation done handled, anims remaining: ', this.#animCnt)
                 }
@@ -81,7 +78,7 @@ export class AnimationManager {
         this.then = this.now
 
         if (this.#animCnt)
-            window.requestAnimationFrame(() => this.updateAnims())
+            window.requestAnimationFrame(() => this.updateAnims(modelUpdateCb))
         else
             this.then = undefined
     }

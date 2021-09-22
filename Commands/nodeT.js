@@ -8,7 +8,7 @@ data = {
         "-ha": 'oneString'
 
     },
-    async logic(parsedData, state) {
+    logic(parsedData, api) { //state observer as last param optional?
         /*extract needed load*/
         const nodePosVecs = parsedData.get('pos')
         const ha = parsedData.get('ha')
@@ -19,31 +19,20 @@ data = {
         for (let i = 0; i < nodePosVecs.length; i++) {
             const data = {}
 
-            data.anim = {
-                'awaitable': true,
-                'duration': 2000, // (ms)
-                'option_to_animate': target_value
-            }
-
             if (ha[0] === '1') {
                 data.pos = [2, 2]
                 data.anim = {
-                    'awaitable': true,
+                    'awaitable': wait[0] == '1' ? true : false,
                     'duration': 2000, // (ms)
-                    'option_to_animate': target_value
+                    'pos': nodePosVecs[i]
                 }
             } else {
                 data.pos = nodePosVecs[i]
             }
 
-            console.log('pushed')
-            let r = await state.pushCreateNode(data)
-            console.log('awaited anim: ', r)
+            api.pushCreateNode(data)
         }
-
-        /*to the stdOut with it..*/
-        return { "msg": "msg" }
     }
 }
 
-            // data.radius = nodeRadii[i] //this becomes undefined,not needed,clear
+// data.radius = nodeRadii[i] //this becomes undefined,not needed,clear

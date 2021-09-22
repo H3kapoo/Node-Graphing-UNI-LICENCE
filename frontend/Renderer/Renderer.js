@@ -1,36 +1,29 @@
 import * as utils from './RendererUtils'
 
 /*Class that handles the rendering of canvas elements*/
-export class GraphRenderer {
+export class Renderer {
 
     #ctx = undefined
     #width = undefined
     #height = undefined
 
-    #stateRef = undefined
-    #animationManagerRef = undefined
     #indexingFlag = true
-    shouldRedraw = false
 
-    /*frame rates*/
-    then = undefined
-    now = undefined
-
-    constructor(stateRef, canvasDetails) {
+    constructor(canvasDetails) {
         this.#ctx = canvasDetails.getContext('2d')
         this.#width = canvasDetails.width
         this.#height = canvasDetails.height
-        this.#stateRef = stateRef
 
-        /*Backend comms*/
-        window.api.receive('nodify-indexing-artifacts-toggle', (evt, args) => {
-            this.#indexingFlag = !this.#indexingFlag
-            this.render()
-        })
+        this.#ctx.fillStyle = 'white'
+        this.#ctx.rect(0, 0, this.#width, this.#height);
+        this.#ctx.fill();
+        this.#renderGrid()
     }
 
     /*Public funcs*/
-    render() {
+    render(modelState, indexing) {
+        if (indexing)
+            this.#indexingFlag = !this.#indexingFlag
 
         this.#ctx.fillStyle = 'white'
         this.#ctx.rect(0, 0, this.#width, this.#height);
@@ -39,9 +32,10 @@ export class GraphRenderer {
 
         if (this.#indexingFlag)
             this.#renderGrid()
+        // console.log(modelState.nodes.getCurrentState())
 
         // this.#renderConns(state)
-        this.#renderNodes(this.#stateRef)
+        this.#renderNodes(modelState)
         // if (indexingFlag)
         //     this._indexingPass(state)
 
@@ -103,7 +97,7 @@ export class GraphRenderer {
         for (const [_, nodeObj] of Object.entries(state.nodes)) {
             const nodeData = nodeObj.getCurrentState()
             let pos = utils.getNodeData(nodeData, 'pos')
-            let id = utils.getNodeData(nodeData, 'node_id')
+            let id = utils.getNodeData(nodeData, 'nodeId')
             let radius = utils.getNodeData(nodeData, 'radius')
 
             //draw node itself
@@ -166,10 +160,4 @@ export class GraphRenderer {
             this.#ctx.strokeText(id.toString(), upPoint[0], upPoint[1])
         }
     }
-
-    /*Setters*/
-    setAnimationManagerRef(animationManagerRef) {
-        this.#animationManagerRef = animationManagerRef
-    }
-
 }

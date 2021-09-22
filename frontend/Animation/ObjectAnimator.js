@@ -15,15 +15,6 @@ export class ObjectAnimator {
     /*Public functs*/
 
     nextAnimationState(currentState, deltaTime) {
-
-        /*if animation done,exit*/
-        // if (this.#t === 1 && !this.#animationDone) {
-        //     console.log('[OA] Anim done')
-        //     this.#animationDone = true
-        //     // delete currentState.anim
-        //     return this.#animationDone
-        // }
-
         this.#transition(currentState)
 
         this.#durationDone += deltaTime
@@ -41,7 +32,7 @@ export class ObjectAnimator {
     #transition(currentState) {
 
         if (this.#animAux === undefined) this.#animAux = { ...currentState }
-        /*for each transitionable option in _animData_ for currentState..*/
+        /*for each transitionable option in #animData for currentState..*/
         for (const [opt, arg] of Object.entries(this.#animData))
             if (this.isTransitionable(opt))
                 currentState[opt] = this[`_${opt}Transitioner`](this.#animAux[opt], arg)
@@ -66,7 +57,7 @@ export class ObjectAnimator {
     /*Setters*/
 
     setUpAnim(data) {
-        this.#totalDuration = data.dt
+        this.#totalDuration = data.duration
         this.#animData = undefined
         this.#animationDone = false
         this.#notified = false

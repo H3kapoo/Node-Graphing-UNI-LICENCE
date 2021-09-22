@@ -1,18 +1,17 @@
 
 /*Class handling command CLI style and behaviour*/
 export class CLITabManager {
-    _CLIObject_ = undefined
-    commandText_ = undefined
-    _cmdHistoryArray_ = []
-    _cmdHistoryArraySize_ = 0
-    _cmdHistoryOffset_ = 0
-    _cliIntro_ = "#terminal$> " //TODO: fetch this from preferences or something,make it custom
+    #CLIObject = undefined
+    commandText = undefined
+    #cmdHistoryArray = []
+    #cmdHistoryOffset = 0
+    #cliIntro = "#terminal$> " //TODO: fetch this from preferences or something,make it custom
 
     constructor(cliID) {
-        this._CLIObject_ = document.getElementById(cliID)
-        this._listenersSetup()
-        this._CLIObject_.innerText = this._cliIntro_
-        this._setCaret(this._cliIntro_.length, this._CLIObject_)
+        this.#CLIObject = document.getElementById(cliID)
+        this.#listenersSetup()
+        this.#CLIObject.innerText = this.#cliIntro
+        this.#setCaret(this.#cliIntro.length, this.#CLIObject)
     }
 
     /*Public funcs*/
@@ -22,7 +21,7 @@ export class CLITabManager {
 
         let intro = `<span id='cmd-info-text-prep'>${foundInContext}</span>`
 
-        let sanitized = this._sanitize(msg)
+        let sanitized = this.#sanitize(msg)
         let content = sanitized.replace(/[0-9]+/g, (match) => {
             return `<span id='cmd-text-number'>${match}</span>`
         })
@@ -38,7 +37,7 @@ export class CLITabManager {
         let outputDiv = document.createElement("div")
 
         let intro = `<span id='cmd-err-text-prep'>${foundInContext}</span>`
-        let sanitized = this._sanitize(msg)
+        let sanitized = this.#sanitize(msg)
 
         let content = sanitized.replace(/[0-9]+/g, (match) => {
             return `<span id='cmd-text-number'>${match}</span>`
@@ -50,126 +49,126 @@ export class CLITabManager {
         document.getElementById("cmd-prepender").appendChild(outputDiv)
     }
 
-    outputGiven(msg) {
+    outputEcho(msg) {
 
         let outputDiv = document.createElement("div")
 
-        let intro = `<span id='cmd-err-info-prep'>${this._cliIntro_}</span>`
+        let intro = `<span id='cmd-err-info-prep'>${this.#cliIntro}</span>`
 
         outputDiv.id = "cmd-info-text"
-        outputDiv.innerHTML = intro + this._sanitize(msg)
+        outputDiv.innerHTML = intro + this.#sanitize(msg)
 
         document.getElementById("cmd-prepender").appendChild(outputDiv)
     }
 
     /*Private funcs*/
-    _listenersSetup() {
-        this._CLIObject_.addEventListener('paste', e => this._pasteListener(e))
-        this._CLIObject_.addEventListener('keydown', e => this._keyDownListener(e))
+    #listenersSetup() {
+        this.#CLIObject.addEventListener('paste', e => this.#pasteListener(e))
+        this.#CLIObject.addEventListener('keydown', e => this.#keyDownListener(e))
         //this needs refactor,history has a bug messed up right now
-        this._CLIObject_.addEventListener('keyup', e => this._keyUpListener(e))
-        this._CLIObject_.addEventListener('input', e => this._inputListener())
-        this._CLIObject_.addEventListener('focus', e => this._focusListener())
+        this.#CLIObject.addEventListener('keyup', e => this.#keyUpListener(e))
+        this.#CLIObject.addEventListener('input', e => this.#inputListener())
+        this.#CLIObject.addEventListener('focus', e => this.#focusListener())
     }
 
-    _pasteListener(e) {
+    #pasteListener(e) {
         e.preventDefault()
-        let text = '' + e.clipboardData.getData("text/plain").replace(this._cliIntro_, '')
+        let text = '' + e.clipboardData.getData("text/plain").replace(this.#cliIntro, '')
         document.execCommand("insertText", false, text)
     }
 
-    _keyDownListener(e) {
+    #keyDownListener(e) {
 
-        this._keepCaretAwayFromCLIIntro(e, this._cliIntro_, this._CLIObject_)
+        this.#keepCaretAwayFromCLIIntro(e, this.#cliIntro, this.#CLIObject)
 
         if (!e)
             e = window.event;
 
         /*handle text sent when enter key*/
         if (e.preventDefault && e.which === 13) {
-            this.commandText_ = undefined
-            this._setEndOfContenteditable(this._CLIObject_)
+            this.commandText = undefined
+            this.#setEndOfContenteditable(this.#CLIObject)
             e.preventDefault();
         }
     }
 
-    _keyUpListener(e) {
+    #keyUpListener(e) {
 
-        this._keepCaretAwayFromCLIIntro(e, this._cliIntro_, this._CLIObject_)
+        this.#keepCaretAwayFromCLIIntro(e, this.#cliIntro, this.#CLIObject)
 
         /*handle text sent when enter key*/
         if (e.which === 13) {
-            if (this.commandText_ === undefined) {
-                this.commandText_ = this._CLIObject_.innerText.replace(this._cliIntro_, '')
+            if (this.commandText === undefined) {
+                this.commandText = this.#CLIObject.innerText.replace(this.#cliIntro, '')
             }
-            this._CLIObject_.innerText = this._cliIntro_
-            this._setEndOfContenteditable(this._CLIObject_)
+            this.#CLIObject.innerText = this.#cliIntro
+            this.#setEndOfContenteditable(this.#CLIObject)
 
             /*History*/
-            this._cmdHistoryArray_.push(this.commandText_)
-            this._cmdHistoryOffset_ = this._cmdHistoryArray_.length
+            this.#cmdHistoryArray.push(this.commandText)
+            this.#cmdHistoryOffset = this.#cmdHistoryArray.length
 
         }
 
         /*handle history up*/
         if (e.which === 38) {
 
-            if (this._cmdHistoryOffset_ <= 0) return
-            this._CLIObject_.innerText = this._cliIntro_ + this._cmdHistoryArray_[this._cmdHistoryOffset_ - 1]
-            this._cmdHistoryOffset_ -= 1
+            if (this.#cmdHistoryOffset <= 0) return
+            this.#CLIObject.innerText = this.#cliIntro + this.#cmdHistoryArray[this.#cmdHistoryOffset - 1]
+            this.#cmdHistoryOffset -= 1
 
-            this._setEndOfContenteditable(this._CLIObject_)
-            this._focusListener(this._CLIObject_)
+            this.#setEndOfContenteditable(this.#CLIObject)
+            this.#focusListener(this.#CLIObject)
         }
         /*handle history down*/
         else if (e.which === 40) {
 
-            if (this._cmdHistoryOffset_ >= this._cmdHistoryArray_.length) return
-            this._cmdHistoryOffset_ += 1
-            this._CLIObject_.innerText = this._cliIntro_ + this._cmdHistoryArray_[this._cmdHistoryOffset_ - 1]
+            if (this.#cmdHistoryOffset >= this.#cmdHistoryArray.length) return
+            this.#cmdHistoryOffset += 1
+            this.#CLIObject.innerText = this.#cliIntro + this.#cmdHistoryArray[this.#cmdHistoryOffset - 1]
 
-            this._setEndOfContenteditable(this._CLIObject_)
-            this._focusListener(this._CLIObject_)
+            this.#setEndOfContenteditable(this.#CLIObject)
+            this.#focusListener(this.#CLIObject)
         }
     }
 
-    _inputListener(e) {
-        // this._cmdHistoryOffset_ = 0
-        // this._CLIObjectColor_.innerText = this._CLIObject_.innerText
+    #inputListener(e) {
+        // this.#cmdHistoryOffset = 0
+        // this._CLIObjectColor_.innerText = this.#CLIObject.innerText
     }
 
-    _focusListener() {
-        // if (!this._CLIObject_.textContent.length) {
-        //     this._CLIObject_.innerText = this._cliIntro_
-        //     this._setEndOfContenteditable(this._CLIObject_)
+    #focusListener() {
+        // if (!this.#CLIObject.textContent.length) {
+        //     this.#CLIObject.innerText = this.#cliIntro
+        //     this.#setEndOfContenteditable(this.#CLIObject)
         // }
     }
 
     /*Getter*/
     getCLIObject() {
-        return this._CLIObject_
+        return this.#CLIObject
     }
 
     /* Utility */
 
-    _keepCaretAwayFromCLIIntro(evt, CLIIntro, CLIObject) {
+    #keepCaretAwayFromCLIIntro(evt, CLIIntro, CLIObject) {
 
         if (CLIObject.innerText.length < CLIIntro.length)
             CLIObject.innerText = CLIIntro
 
         /*prevent backspace bug*/
-        if (this._getCaretCharacterOffsetWithin(CLIObject) <= CLIIntro.length) {
+        if (this.#getCaretCharacterOffsetWithin(CLIObject) <= CLIIntro.length) {
             if (evt.which === 8) {
                 evt.preventDefault()
             }
         }
 
-        if (this._getCaretCharacterOffsetWithin(CLIObject) < CLIIntro.length)
-            this._setCaret(CLIIntro.length, CLIObject)
+        if (this.#getCaretCharacterOffsetWithin(CLIObject) < CLIIntro.length)
+            this.#setCaret(CLIIntro.length, CLIObject)
 
     }
 
-    _getCaretCharacterOffsetWithin(element) {
+    #getCaretCharacterOffsetWithin(element) {
         var caretOffset = 0;
         var doc = element.ownerDocument || element.document;
         var win = doc.defaultView || doc.parentWindow;
@@ -193,7 +192,7 @@ export class CLITabManager {
         return caretOffset;
     }
 
-    _setCaret(pos, CLIObject) {
+    #setCaret(pos, CLIObject) {
         {
             var range = document.createRange()
             var sel = window.getSelection()
@@ -207,7 +206,7 @@ export class CLITabManager {
     }
 
 
-    _setEndOfContenteditable(contentEditableElement) {
+    #setEndOfContenteditable(contentEditableElement) {
         let range, selection;
         if (document.createRange) {
             range = document.createRange()
@@ -219,7 +218,7 @@ export class CLITabManager {
         }
     }
 
-    _sanitize(string) {
+    #sanitize(string) {
         return string
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")

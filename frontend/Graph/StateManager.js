@@ -1,5 +1,5 @@
 /*Internal Imports*/
-import { SupportedValidators, SupportedConnOpts, SupportedNodeOpts } from "./StateSupport"
+import { SupportedValidators, SupportedConnOpts, SupportedNodeOpts } from "../Executor/OptionsSupport"
 import { NodeObj } from "../Objects/NodeObj"
 import { ConnObj } from "../Objects/ConnObj"
 
@@ -23,7 +23,7 @@ export class StateManager {
     /*Public funcs*/
 
     async pushCreateNode(opts) {
-        // this._validateUserProcessed('node', opts) //decomment later
+        // this.#validateUserPushed('node', opts) //decomment later
 
         const nId = this._getNextId('node')
         opts.node_id = nId
