@@ -3,46 +3,36 @@ data = {
         "name": 'node.t',
         "mandatory": ["-pos"],
         "-pos": "twoPositiveNumberVecs",
-        "-radius": "positiveNumberVec",
+        "-dt": 'onePositiveNumber',
+        "-wait": 'oneString',
+        "-ha": 'oneString'
+
     },
-    logic(parsedData, state) {
+    logic(parsedData, api) { //state observer as last param optional?
         /*extract needed load*/
         const nodePosVecs = parsedData.get('pos')
-        const nodeRadii = parsedData.get('radius')
+        const ha = parsedData.get('ha')
+        const dt = parsedData.get('dt')
+        const wait = parsedData.get('wait')
 
         /*create 'push' data payload*/
         for (let i = 0; i < nodePosVecs.length; i++) {
             const data = {}
 
-            data.pos = nodePosVecs[i]
-            data.radius = nodeRadii[i]
-
-            state.pushCreateNode(data)
-            // state.pushUpdateNode({ 'id': nId, 'pos': [400, 400] })
-        }
-
-        /*execute the pushed commands*/
-        const pushResult = state.executePushed()
-
-        // /*optional,let's assure something got executed + */
-        // /*optional,but nice,prepare an output for success*/
-        let msg = pushResult.msg.length ? 'Created node(s): ' : 'Success, but nothing pushed for execution!'
-
-        pushResult.msg.forEach((act, index) => {
-            if (act.type == 'createNode') {
-                let nId = act.param.node_id
-                let nPos = act.param.pos
-                let nRad = act.param.radius
-
-                msg += `Id=${nId} at (${nPos[0]},${nPos[1]})`
-                msg += nRad ? ` with radius=${nRad}` : ``
-
-                if (index < pushResult.msg.length - 1)
-                    msg += ', '
+            if (ha[0] === '1') {
+                data.pos = [2, 2]
+                data.anim = {
+                    'awaitable': wait[0] == '1' ? true : false,
+                    'duration': 2000, // (ms)
+                    'pos': nodePosVecs[i]
+                }
+            } else {
+                data.pos = nodePosVecs[i]
             }
-        })
 
-        /*to the stdOut with it..*/
-        return { msg }
+            api.pushCreateNode(data)
+        }
     }
 }
+
+// data.radius = nodeRadii[i] //this becomes undefined,not needed,clear

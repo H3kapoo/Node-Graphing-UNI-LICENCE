@@ -7,6 +7,8 @@ export const SupportedNodeOpts = {
     "node_id": { 'active': true, 'type': 'integer' },
     "type": { 'active': true, 'type': 'string' },
     "id": { 'active': true, 'type': 'integer' },
+    'shouldWaitForAnim': { 'active': true, 'type': 'boolean' },
+    'duration': { 'active': true, 'type': 'integer' },
     "others": { 'active': false, 'type': '?' },
     //..
 }
@@ -25,6 +27,7 @@ export const SupportedConnOpts = {
 
 /*Internal cmds arg validators*/
 export const SupportedValidators = {
+
     boolean(a) {
         return (typeof a === 'boolean')
     },

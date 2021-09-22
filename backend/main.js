@@ -49,6 +49,49 @@ const debugMenu = new MenuItem({
     }]
 })
 
+
+const sharing = new MenuItem({
+    label: 'Share',
+    submenu: [{
+        label: 'Share via GMail..',
+        accelerator: 'Ctrl+Alt+M',
+    },
+    {
+        label: 'Share via Google Drive..',
+        accelerator: 'Ctrl+Alt+D',
+    }]
+})
+
+const exporting = new MenuItem({
+    label: 'Export',
+    submenu: [{
+        label: 'Export as PNG..',
+        accelerator: 'Ctrl+Alt+P',
+    },
+    {
+        label: 'Export as JPEG..',
+        accelerator: 'Ctrl+Alt+J',
+    }, {
+        label: 'Export as GIF..',
+        accelerator: 'Ctrl+Alt+G',
+    }]
+})
+
+const uploading = new MenuItem({
+    label: 'Save',
+    submenu: [{
+        label: 'Save',
+        accelerator: 'Ctrl+S',
+    },
+    {
+        label: 'Save as..',
+        accelerator: 'Ctrl+Alt+S',
+    }, {
+        label: 'Save to MongoDB..',
+        accelerator: 'Ctrl+Alt+M',
+    }]
+})
+
 menu.append(debugMenu)
 Menu.setApplicationMenu(menu)
 

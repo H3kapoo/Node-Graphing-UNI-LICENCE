@@ -9,7 +9,6 @@ export const CommandArgParser = {
             return this.stringVec(arg)
         else
             throw {
-                'stage': '[Parse]',
                 "msg": `Schema type doesn't accept multiple string values! Only one!`
             }
     },
@@ -23,7 +22,6 @@ export const CommandArgParser = {
             return res
         else
             throw {
-                'stage': '[Parse]',
                 "msg": `Schema type doesn't accept multiple positive int values! Only one!`
             }
     },
@@ -37,7 +35,6 @@ export const CommandArgParser = {
             return res
         else
             throw {
-                'stage': '[Parse]',
                 "msg": `Schema type doesn't accept multiple positive int values! Only one!`
             }
     },
@@ -48,7 +45,6 @@ export const CommandArgParser = {
             return this.stringVec(arg)
         else
             throw {
-                'stage': '[Parse]',
                 "msg": `Argument type must be string pair but it's not in ${arg} !`
             }
     },
@@ -62,7 +58,6 @@ export const CommandArgParser = {
             return res
         else
             throw {
-                'stage': '[Parse]',
                 "msg": `Argument type must be positive int pair but it's not in ${arg}`
             }
     },
@@ -76,7 +71,6 @@ export const CommandArgParser = {
             return res
         else
             throw {
-                'stage': '[Parse]',
                 "msg": `Argument type must be int pair but it's not in ${arg}`
             }
     },
@@ -89,7 +83,6 @@ export const CommandArgParser = {
 
         if (arg[0] === ',' || arg[arg.length - 1] === ',')
             throw {
-                'stage': '[Parse]',
                 "msg": `Trailing comma is invalid at arg: ${arg} !`
             }
 
@@ -106,14 +99,12 @@ export const CommandArgParser = {
 
         if (arg[0] === ',' || arg[arg.length - 1] === ',')
             throw {
-                'stage': '[Parse]',
                 "msg": `Trailing comma is invalid at arg: ${arg} !`
             }
 
         for (let i = 0; i < splitted.length; i++) {
             if (!this._isValidPositiveInt(splitted[i]))
                 throw {
-                    'stage': '[Parse]',
                     "msg": `${splitted[i]} must be a positive integer in: ${arg} but it's not!`
                 }
             res.push(parseFloat(splitted[i]))
@@ -128,14 +119,12 @@ export const CommandArgParser = {
 
         if (arg[0] === ',' || arg[arg.length - 1] === ',')
             throw {
-                'stage': '[Parse]',
                 "msg": `Trailing comma is invalid at arg: ${arg} !`
             }
 
         for (let i = 0; i < splitted.length; i++) {
             if (!this._isValidInt(splitted[i]))
                 throw {
-                    'stage': '[Parse]',
                     "msg": `${splitted[i]} must be an integer in: ${arg} but it's not!`
                 }
             res.push(parseFloat(splitted[i]))
@@ -153,7 +142,6 @@ export const CommandArgParser = {
 
             if (splitted[i][0] === ',' || splitted[i][splitted[i].length - 1] === ',')
                 throw {
-                    'stage': '[Parse]',
                     "msg": `Trailing comma is invalid at arg ${splitted[i]} !`
                 }
 
@@ -161,7 +149,6 @@ export const CommandArgParser = {
 
             if (splitted2.length !== 2)
                 throw {
-                    'stage': '[Parse]',
                     "msg": `Argument must be string pair but its not: ${splitted[i]}`
                 }
 
@@ -181,7 +168,6 @@ export const CommandArgParser = {
 
             if (splitted[i][0] === ',' || splitted[i][splitted[i].length - 1] === ',')
                 throw {
-                    'stage': '[Parse]',
                     "msg": `Trailing comma is invalid at arg ${splitted[i]} !`
                 }
 
@@ -189,19 +175,16 @@ export const CommandArgParser = {
 
             if (splitted2.length !== 2)
                 throw {
-                    'stage': '[Parse]',
                     "msg": `Argument must be int pair but its not: ${splitted[i]}`
                 }
 
             if (!this._isValidPositiveInt(splitted2[0]))
                 throw {
-                    'stage': '[Parse]',
                     "msg": `${splitted2[0]} must be a positive Int in: ${splitted[i]} but it's not!`
                 }
 
             if (!this._isValidPositiveInt(splitted2[1]))
                 throw {
-                    'stage': '[Parse]',
                     "msg": `${splitted2[1]} must be a positive Int in: ${splitted[i]} but it's not!`
                 }
 
@@ -221,7 +204,6 @@ export const CommandArgParser = {
 
             if (splitted[i][0] === ',' || splitted[i][splitted[i].length - 1] === ',')
                 throw {
-                    'stage': '[Parse]',
                     "msg": `Trailing comma is invalid at arg ${splitted[i]} !`
                 }
 
@@ -229,19 +211,16 @@ export const CommandArgParser = {
 
             if (splitted2.length !== 2)
                 throw {
-                    'stage': '[Parse]',
                     "msg": `Argument must be int pair but its not: ${splitted[i]}`
                 }
 
             if (!this._isValidInt(splitted2[0]))
                 throw {
-                    'stage': '[Parse]',
                     "msg": `${splitted2[0]} must be an Int in: ${splitted[i]} but it's not!`
                 }
 
             if (!this._isValidInt(splitted2[1]))
                 throw {
-                    'stage': '[Parse]',
                     "msg": `${splitted2[1]} must be an Int in: ${splitted[i]} but it's not!`
                 }
 
@@ -261,7 +240,6 @@ export const CommandArgParser = {
 
             if (splitted[i][0] === ',' || splitted[i][splitted[i].length - 1] === ',')
                 throw {
-                    'stage': '[Parse]',
                     "msg": `Trailing comma is invalid at arg ${splitted[i]} !`
                 }
 
@@ -284,7 +262,6 @@ export const CommandArgParser = {
 
             if (splitted[i][0] === ',' || splitted[i][splitted[i].length - 1] === ',')
                 throw {
-                    'stage': '[Parse]',
                     "msg": `Trailing comma is invalid at arg ${splitted[i]} !`
                 }
 
@@ -293,7 +270,6 @@ export const CommandArgParser = {
             for (let j = 0; j < splitted2.length; j++) {
                 if (!this._isValidPositiveInt(splitted2[j]))
                     throw {
-                        'stage': '[Parse]',
                         "msg": `${splitted2} must be a positive Int in: ${splitted2} but it's not!`
                     }
                 res2.push(parseFloat(splitted2[j]))
@@ -313,7 +289,6 @@ export const CommandArgParser = {
 
             if (splitted[i][0] === ',' || splitted[i][splitted[i].length - 1] === ',')
                 throw {
-                    'stage': '[Parse]',
                     "msg": `Trailing comma is invalid at arg ${splitted[i]} !`
                 }
 
@@ -322,7 +297,6 @@ export const CommandArgParser = {
             for (let j = 0; j < splitted2.length; j++) {
                 if (!this._isValidInt(splitted2[j]))
                     throw {
-                        'stage': '[Parse]',
                         "msg": `${splitted2} must be an Int in: ${splitted2} but it's not!`
                     }
                 res2.push(parseFloat(splitted2[j]))
