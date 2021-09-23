@@ -4,7 +4,7 @@
 
 <summary>Click to open</summary>
   
-![Imgur Image](https://i.imgur.com/cw49fGl.png)
+![Imgur Image](https://i.imgur.com/SXukUzd.png)
   
 </details>
 
