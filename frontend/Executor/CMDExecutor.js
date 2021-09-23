@@ -33,21 +33,22 @@ export class CMDExecutor {
             return []
         }
 
-        let cmdQueue = []
-
+        let executorPushCmdQueue = []
+        let outputQueue = []
         /*META API*/
         //abstract this from here
         const META_API = {
-            pushCreateNode(data) { cmdQueue.push({ 'type': 'CREATE_NODE', data }) },
-            pushUpdateNode(data) { cmdQueue.push({ 'type': 'UPDATE_NODE', data }) },
-            pushDeleteNode(data) { cmdQueue.push({ 'type': 'DELETE_NODE', data }) },
-            pushCreateConn(data) { cmdQueue.push({ 'type': 'CREATE_CONN', data }) },
-            pushUpdateConn(data) { cmdQueue.push({ 'type': 'UPDATE_CONN', data }) },
-            pushDeleteConn(data) { cmdQueue.push({ 'type': 'DELETE_CONN', data }) },
-            pushResultMsg(dataMsg) { cmdQueue.push({ 'type': 'MSG', dataMsg }) }
+            pushCreateNode(data) { executorPushCmdQueue.push({ 'type': 'CREATE_NODE', data }) },
+            pushUpdateNode(data) { executorPushCmdQueue.push({ 'type': 'UPDATE_NODE', data }) },
+            pushDeleteNode(data) { executorPushCmdQueue.push({ 'type': 'DELETE_NODE', data }) },
+            pushCreateConn(data) { executorPushCmdQueue.push({ 'type': 'CREATE_CONN', data }) },
+            pushUpdateConn(data) { executorPushCmdQueue.push({ 'type': 'UPDATE_CONN', data }) },
+            pushDeleteConn(data) { executorPushCmdQueue.push({ 'type': 'DELETE_CONN', data }) },
+            pushResultMsg(dataMsg) { outputQueue.push({ 'type': 'STD_MSG', dataMsg }) },
+            getPushQueue() { return [...executorPushCmdQueue] }
         }
 
         CommandsLogic[parsedData.cmdName](parsedData, META_API)
-        return cmdQueue
+        return { executorPushCmdQueue, outputQueue }
     }
 }

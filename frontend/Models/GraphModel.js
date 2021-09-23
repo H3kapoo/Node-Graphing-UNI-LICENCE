@@ -11,17 +11,32 @@ export class GraphModel {
         }
     }
 
-    commitNodeOperation(id, node) {
+    commitNodeCreation(id, node) {
         this.#modelData.nodes[id] = node
+    }
+
+    commitNodeUpdate(id, opts) {
+        const state = this.#modelData.nodes[id].getCurrentState()
+        console.log({ ...this.#modelData.nodes[id].getCurrentState() })
+
+        for (const [opt, arg] of Object.entries(opts))
+            state[opt] = arg
+
+        this.#modelData.nodes[id].setCurrentState(state)
+
+    }
+
+    commitNodeDelete(id) {
+        delete this.#modelData.nodes[id]
     }
 
     commitConnOperation(id, conn) {
         this.#modelData.conns[id] = conn
     }
 
-    getCurrentState() {
-        return this.#modelData
-    }
+    assertNodeExistence(id) { return this.#modelData.nodes[id] }
+
+    getCurrentState() { return this.#modelData }
 
     getNextNodeId() { return this.#maxNodeId++ }
 

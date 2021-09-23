@@ -25,7 +25,9 @@ export class AnimationManager {
             this.#needsToAwaitAnimation = true
             this.updateAnims(modelUpdateCb)
 
-            return new Promise((resolve, reject) => { this.#resolveAnim = resolve })
+            return new Promise((resolve, reject) => {
+                this.#resolveAnim = resolve
+            })
         }
         /*resolve directly if no need to wait*/
         this.updateAnims(modelUpdateCb)

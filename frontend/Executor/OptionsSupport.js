@@ -4,7 +4,7 @@ export const SupportedNodeOpts = {
     "radius": { 'active': true, 'type': 'integer' },
     "pos": { 'active': true, 'type': 'intPairVec' },
     "color": { 'active': true, 'type': 'string' },
-    "node_id": { 'active': true, 'type': 'integer' },
+    "nodeId": { 'active': true, 'type': 'integer' },
     "type": { 'active': true, 'type': 'string' },
     "id": { 'active': true, 'type': 'integer' },
     'shouldWaitForAnim': { 'active': true, 'type': 'boolean' },

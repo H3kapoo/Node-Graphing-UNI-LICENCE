@@ -99,7 +99,6 @@ export class Renderer {
             let pos = utils.getNodeData(nodeData, 'pos')
             let id = utils.getNodeData(nodeData, 'nodeId')
             let radius = utils.getNodeData(nodeData, 'radius')
-
             //draw node itself
             this.#ctx.beginPath()
             this.#ctx.arc(pos[0], pos[1], radius, 0, 2 * Math.PI)

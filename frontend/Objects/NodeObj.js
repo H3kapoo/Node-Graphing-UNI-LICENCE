@@ -25,6 +25,14 @@ export class NodeObj {
 
     hasAnimation() { return this.#currentState.anim ? true : false }
 
+    /*Setters*/
+    setCurrentState(state) {
+        this.#currentState = state
+
+        if (state.anim) {
+            this.#objAnimator.setUpAnim(this.#currentState.anim)
+        }
+    }
     /*Getters*/
 
     getCurrentState() { return this.#currentState }

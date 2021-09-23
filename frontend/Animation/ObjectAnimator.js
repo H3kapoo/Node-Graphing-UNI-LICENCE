@@ -3,11 +3,9 @@ export class ObjectAnimator {
 
     #animData = undefined
     #animAux = undefined
-    #renderTriggerTime = 16 //(ms) to be removed
     #durationDone = 0
     #totalDuration = undefined
     #animationDone = false
-    #notified = false
     #t = 0
 
     constructor() { }
@@ -60,7 +58,9 @@ export class ObjectAnimator {
         this.#totalDuration = data.duration
         this.#animData = undefined
         this.#animationDone = false
-        this.#notified = false
+        this.#animAux = undefined
+        this.#t = 0
+        this.#durationDone = 0
 
         this.#animData = data
     }

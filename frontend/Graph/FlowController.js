@@ -38,9 +38,16 @@ export class FlowManager {
 
         for (const cmd of splittedChain) {
             const parsedPayload = this.#cmdParser.parse(cmd)
-            const executorPushCmdQueue = this.#cmdExecutor.execute(parsedPayload)
-            console.log(executorPushCmdQueue)
-            await this.#modelApplier.tryToApply(executorPushCmdQueue)
+            const queue = this.#cmdExecutor.execute(parsedPayload)
+            await this.#modelApplier.tryToApply(queue.executorPushCmdQueue)
+
+            for (const qMsg of queue.outputQueue)
+                switch (qMsg.type) {
+                    case "STD_MSG":
+                        this.#CLIManager.outputStd('[GraphInfo]', qMsg.dataMsg)
+                        break
+                }
+
         }
     }
 }

@@ -29,8 +29,16 @@ export class ModelApplier {
             for (const pushCmd of executorPushCmdQueue)
                 switch (pushCmd.type) {
                     case 'CREATE_NODE': await this.applyCreateNode(pushCmd.data)
+                        break
+                    case 'UPDATE_NODE': await this.applyUpdateNode(pushCmd.data)
+                        break
+                    case 'DELETE_NODE': await this.applyDeleteNode(pushCmd.data)
+                        break
                     //add the rest
+                    default:
+                        console.log('API_VAL UNKNOWN')
                 }
+
         } catch (e) {
             console.log(e)
             this.#CLILogger.outputErr('[Validation]', e.msg)
@@ -46,13 +54,86 @@ export class ModelApplier {
         const newNode = new NodeObj({ ...nodeOpts })
 
         if (nodeOpts.anim) {
-            this.#graphModelRef.commitNodeOperation(nId, newNode)
+            this.#graphModelRef.commitNodeCreation(nId, newNode)
             await this.#animator.handleAnimation(newNode, () => {
                 this.#renderer.render(this.#graphModelRef.getCurrentState())
             })
 
         } else {
-            this.#graphModelRef.commitNodeOperation(nId, newNode)
+            this.#graphModelRef.commitNodeCreation(nId, newNode)
+            this.#renderer.render(this.#graphModelRef.getCurrentState())
+        }
+    }
+
+    async applyUpdateNode(nodeOpts) {
+        if (nodeOpts.id === undefined)
+            throw {
+                'msg': `No NodeId provided for update apply !`
+            }
+
+        this.#validateUserPushed('node', nodeOpts)
+
+        const node = this.#graphModelRef.assertNodeExistence(nodeOpts.id)
+
+        if (!node) {
+            throw {
+                'msg': `Node Id: ${nodeOpts.id} has not been found!`
+            }
+        }
+
+        /* Nodes have a nodeId internally, discard the passed '-id' */
+        /* In order to avoid duplication of same information */
+        const nId = nodeOpts.id
+        delete nodeOpts.id
+
+        if (nodeOpts.anim) {
+            this.#graphModelRef.commitNodeUpdate(nId, nodeOpts)
+            await this.#animator.handleAnimation(node, () => {
+                this.#renderer.render(this.#graphModelRef.getCurrentState())
+            })
+
+        } else {
+            this.#graphModelRef.commitNodeUpdate(nId, nodeOpts)
+            this.#renderer.render(this.#graphModelRef.getCurrentState())
+        }
+    }
+
+    async applyDeleteNode(nodeOpts) {
+
+        if (nodeOpts.id === undefined)
+            throw {
+                'msg': `No NodeId provided for delete apply !`
+            }
+
+        const node = this.#graphModelRef.assertNodeExistence(nodeOpts.id)
+
+        if (node === undefined) {
+            throw {
+                'msg': `Can't delete non-existent node Id: ${nodeOpts.id}`
+            }
+        }
+
+        //TODO
+        /* Find conns referenced by node and delete them */
+        // if (node.conn_refs) {
+        //     for (let i = 0; i < node.conn_refs.length; i++) {
+        //         let connId = node.conn_refs[i]
+        //         this.pushDeleteConn(connId)
+        //     }
+        // }
+
+        if (nodeOpts.anim) {
+            /*deletion with animation is STRICTLY awaitable*/
+            nodeOpts.anim.awaitable = true
+            this.#graphModelRef.commitNodeUpdate(nodeOpts.id, nodeOpts)
+
+            await this.#animator.handleAnimation(node, () => {
+                this.#renderer.render(this.#graphModelRef.getCurrentState())
+            })
+            this.#graphModelRef.commitNodeDelete(nodeOpts.id)
+
+        } else {
+            this.#graphModelRef.commitNodeDelete(nodeOpts.id)
             this.#renderer.render(this.#graphModelRef.getCurrentState())
         }
     }
