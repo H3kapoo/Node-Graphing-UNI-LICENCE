@@ -16,25 +16,25 @@ export class AnimationManager {
 
     /*Public functs*/
 
-    async handleAnimation(stateObject, modelUpdateCb) {
+    async handleAnimation(stateObject, modelUpdateCb, onDoneOutputCb) {
         this.#animObjectsList.push(stateObject)
         this.#animCnt = this.#animObjectsList.length
         console.log('[AM] Obj has anim, currentCnt: ', this.#animCnt)
 
         if (stateObject.getCurrentState().anim.awaitable === true) {
             this.#needsToAwaitAnimation = true
-            this.updateAnims(modelUpdateCb)
+            this.updateAnims(modelUpdateCb, onDoneOutputCb)
 
             return new Promise((resolve, reject) => {
                 this.#resolveAnim = resolve
             })
         }
         /*resolve directly if no need to wait*/
-        this.updateAnims(modelUpdateCb)
+        this.updateAnims(modelUpdateCb, onDoneOutputCb)
         return new Promise((resolve, reject) => resolve())
     }
 
-    updateAnims(modelUpdateCb) {
+    updateAnims(modelUpdateCb, onDoneOutputCb) {
 
         /*Delta time inits*/
         if (!this.then)
@@ -49,10 +49,12 @@ export class AnimationManager {
 
         for (let obj of this.#animObjectsList)
             animHasFinished = obj.updateAnimations(deltaTime)
+
         if (animHasFinished) {
             for (let obj of this.#animObjectsList) {
                 if (obj.isAnimationDone()) {
 
+                    onDoneOutputCb()
                     /*remove done animation from list of anims*/
                     const filterObj = (o) => o !== obj;
                     this.#animObjectsList = this.#animObjectsList.filter(filterObj);
@@ -70,7 +72,7 @@ export class AnimationManager {
                     /*handle if GR should changes modes + decrease anim cnt*/
                     this.#needsToAwaitAnimation = false
                     this.#animCnt -= 1
-                    window.requestAnimationFrame(() => this.updateAnims(modelUpdateCb))
+                    window.requestAnimationFrame(() => this.updateAnims(modelUpdateCb, onDoneOutputCb))
 
                     console.log('[AM] Animation done handled, anims remaining: ', this.#animCnt)
                 }
@@ -80,7 +82,7 @@ export class AnimationManager {
         this.then = this.now
 
         if (this.#animCnt)
-            window.requestAnimationFrame(() => this.updateAnims(modelUpdateCb))
+            window.requestAnimationFrame(() => this.updateAnims(modelUpdateCb, onDoneOutputCb))
         else
             this.then = undefined
     }

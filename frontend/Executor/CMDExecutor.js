@@ -34,7 +34,7 @@ export class CMDExecutor {
         }
 
         let executorPushCmdQueue = []
-        let outputQueue = []
+        let outputFunc
         /*META API*/
         //abstract this from here
         const META_API = {
@@ -44,11 +44,10 @@ export class CMDExecutor {
             pushCreateConn(data) { executorPushCmdQueue.push({ 'type': 'CREATE_CONN', data }) },
             pushUpdateConn(data) { executorPushCmdQueue.push({ 'type': 'UPDATE_CONN', data }) },
             pushDeleteConn(data) { executorPushCmdQueue.push({ 'type': 'DELETE_CONN', data }) },
-            pushResultMsg(dataMsg) { outputQueue.push({ 'type': 'STD_MSG', dataMsg }) },
-            getPushQueue() { return [...executorPushCmdQueue] }
+            std(f) { outputFunc = f }
         }
 
         CommandsLogic[parsedData.cmdName](parsedData, META_API)
-        return { executorPushCmdQueue, outputQueue }
+        return { executorPushCmdQueue, outputFunc }
     }
 }

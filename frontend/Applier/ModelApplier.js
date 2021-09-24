@@ -10,6 +10,11 @@ export class ModelApplier {
     #renderer
     #animator
 
+    #queueLength = 0
+    outputCb = undefined
+    #applyResolve = undefined
+    #outputQueue = []
+
     constructor(CLILogger, graphModelRef, canvasManagerRef) {
         this.#CLILogger = CLILogger
         this.#graphModelRef = graphModelRef
@@ -24,6 +29,13 @@ export class ModelApplier {
 
     async tryToApply(executorPushCmdQueue) {
         if (!executorPushCmdQueue) return
+
+        this.#CLILogger.outputStd('[GraphInfo]', "Command executing..")
+        this.#applyResolve = undefined
+        this.#queueLength = executorPushCmdQueue.length
+        this.#outputQueue = []
+
+        const commandDonePromise = new Promise((resolve, reject) => { this.#applyResolve = resolve })
 
         try {
             for (const pushCmd of executorPushCmdQueue)
@@ -43,6 +55,17 @@ export class ModelApplier {
             console.log(e)
             this.#CLILogger.outputErr('[Validation]', e.msg)
         }
+
+        await commandDonePromise
+    }
+
+    notifyDone() {
+        if (this.#queueLength == 0) {
+            this.#CLILogger.outputStd('[GraphInfo]', this.outputCb(this.#outputQueue)) // <= put in here the graph state after cmd
+            this.#CLILogger.outputStd('[GraphInfo]', "Command finished!")
+            this.#applyResolve()
+        }
+
     }
 
     async applyCreateNode(nodeOpts) {
@@ -53,15 +76,32 @@ export class ModelApplier {
 
         const newNode = new NodeObj({ ...nodeOpts })
 
+        let nBefore, nAfter
+
         if (nodeOpts.anim) {
             this.#graphModelRef.commitNodeCreation(nId, newNode)
+
+            nBefore = { ...this.#graphModelRef.getStateOfNode(nId) }
+
             await this.#animator.handleAnimation(newNode, () => {
                 this.#renderer.render(this.#graphModelRef.getCurrentState())
+            }, () => {
+                this.#queueLength -= 1
+                nAfter = { ...this.#graphModelRef.getStateOfNode(nId) }
+                this.#outputQueue.push({ 'type': 'CREATE_NODE', nBefore, nAfter })
+                this.notifyDone()
             })
 
         } else {
             this.#graphModelRef.commitNodeCreation(nId, newNode)
+
+            nBefore = { ...this.#graphModelRef.getStateOfNode(nId) }
+
             this.#renderer.render(this.#graphModelRef.getCurrentState())
+            this.#queueLength -= 1
+            nAfter = { ...this.#graphModelRef.getStateOfNode(nId) }
+            this.#outputQueue.push({ 'type': 'CREATE_NODE', nBefore, nAfter })
+            this.notifyDone()
         }
     }
 
@@ -73,7 +113,7 @@ export class ModelApplier {
 
         this.#validateUserPushed('node', nodeOpts)
 
-        const node = this.#graphModelRef.assertNodeExistence(nodeOpts.id)
+        const node = this.#graphModelRef.getNodeId(nodeOpts.id)
 
         if (!node) {
             throw {
@@ -105,7 +145,7 @@ export class ModelApplier {
                 'msg': `No NodeId provided for delete apply !`
             }
 
-        const node = this.#graphModelRef.assertNodeExistence(nodeOpts.id)
+        const node = this.#graphModelRef.getNodeId(nodeOpts.id)
 
         if (node === undefined) {
             throw {

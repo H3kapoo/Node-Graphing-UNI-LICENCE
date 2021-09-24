@@ -17,7 +17,6 @@ export class GraphModel {
 
     commitNodeUpdate(id, opts) {
         const state = this.#modelData.nodes[id].getCurrentState()
-        console.log({ ...this.#modelData.nodes[id].getCurrentState() })
 
         for (const [opt, arg] of Object.entries(opts))
             state[opt] = arg
@@ -30,11 +29,13 @@ export class GraphModel {
         delete this.#modelData.nodes[id]
     }
 
+    getStateOfNode(id) { return this.#modelData.nodes[id].getCurrentState() }
+
     commitConnOperation(id, conn) {
         this.#modelData.conns[id] = conn
     }
 
-    assertNodeExistence(id) { return this.#modelData.nodes[id] }
+    getNodeId(id) { return this.#modelData.nodes[id] }
 
     getCurrentState() { return this.#modelData }
 

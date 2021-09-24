@@ -27,27 +27,23 @@ export class FlowManager {
 
     async compute(evt) {
         if (evt.which !== 13) return
-        this.#CLIManager.outputEcho(this.#CLIManager.commandText)
 
         if (this.#modelApplier.isBusy()) {
             this.#CLIManager.outputErr('[Animation]', 'Canvas is busy drawing! Command Rejected!')
             return
-        }
+        } else
+            this.#CLIManager.outputEcho(this.#CLIManager.commandText)
 
         const splittedChain = this.#CLIManager.commandText.split('&&')
 
         for (const cmd of splittedChain) {
             const parsedPayload = this.#cmdParser.parse(cmd)
             const queue = this.#cmdExecutor.execute(parsedPayload)
+
+            if (!queue) continue
+
+            this.#modelApplier.outputCb = queue.outputFunc
             await this.#modelApplier.tryToApply(queue.executorPushCmdQueue)
-
-            for (const qMsg of queue.outputQueue)
-                switch (qMsg.type) {
-                    case "STD_MSG":
-                        this.#CLIManager.outputStd('[GraphInfo]', qMsg.dataMsg)
-                        break
-                }
-
         }
     }
 }
